@@ -12,7 +12,7 @@ public class Profile {
     private Boolean status;
 
     private List<Profile> friends;
-    // TODO adicionar array de postagens
+    private List<Post> posts;
 
 
     public Profile(int id, String username, String photo, String email) {
@@ -22,6 +22,7 @@ public class Profile {
         this.email = email;
         this.status = true;
         this.friends = new ArrayList<>();
+        this.posts = new ArrayList<>();
     }
 
     public void addFriend(Profile friend) {
@@ -32,13 +33,17 @@ public class Profile {
         this.friends.remove(friend);
     }
 
-    // TODO criar metodo para adicionar publicação
+    public void addPost(Post newPost) {
+        this.posts.add(newPost);
+    }
 
     public List<Profile> listFriends() {
         return this.friends;
     }
 
-    // TODO criar método para listar postagens
+    public List<Post> listPosts() {
+        return this.posts;
+    }
 
     public void changeStatus() {
         this.status = !this.status;
