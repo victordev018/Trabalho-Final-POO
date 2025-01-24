@@ -94,4 +94,47 @@ public class SocialNetwork {
         if (!advancedProfile.getStatus()) throw new ProfileAlreadyActivatedException("o perfil do " + username + " ja esta ativo.");
         advancedProfile.setStatus(false);
     }
+
+    public void sendRequest(Profile applicant, Profile receiver) {
+        if(pendingFriendRequests.containsKey(applicant) && pendingFriendRequests.get(receiver).equals(receiver) {
+            // TODO: adicionar lançamento de exceção para solicitação já existir
+        }
+        if(applicant.getFriends().contains(receiver)){
+            // TODO: adicionar lançamento de exceção para o solicitado já constar nos amigos
+        }
+
+        pendingFriendRequests.put(applicant, receiver);
+
+    }
+
+    public void acceptRequest(Profile applicant, Profile receiver) {
+        if(!pendingFriendRequests.containsKey(applicant) || !pendingFriendRequests.get(receiver).equals(receiver)) {
+            // TODO: adicionar exceção de não haver solicitações entre os usuários em questão
+        }
+
+        applicant.addFriend(receiver);
+        receiver.addFriend(applicant);
+        pendingFriendRequests.remove(applicant);
+    }
+
+    public void removeRequest(Profile applicant, Profile receiver){
+        if(!pendingFriendRequests.containsKey(applicant) || !pendingFriendRequests.get(receiver).equals(receiver)){
+            // TODO: adicionar mesma exceção do método acima
+        }
+
+        pendingFriendRequests.remove(applicant);
+    }
+
+    public void addInteraction(Post post, Interaction interaction){
+        if(!(post instanceof AdvancedPost)){
+            // TODO: lançar exceção que post não é instancia de AdvancedPost
+        }
+        AdvancedPost advancedPost = (AdvancedPost) post;
+        if(advancedPost.listInteractions().contains(interaction)){
+            // TODO: Adicionar exceção de já existir interação com o AdvancedPost
+        }
+        advancedPost.addInteraction(interaction);
+    }
 }
+
+
