@@ -14,13 +14,8 @@ public class ProfileRepositoryImplFile implements IProfileRepository {
     }
 
     @Override
-    public Boolean addProfile(Profile profile) {
-        Optional<Profile> foundProfile = this.findProfileById(profile.getId());
-        if (foundProfile.isPresent()) {
-            return false;
-        }
+    public void addProfile(Profile profile) {
         profiles.add(profile);
-        return true;
     }
 
     @Override
