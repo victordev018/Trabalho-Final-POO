@@ -20,4 +20,5 @@ public enum InteractionType {
     public String toString() {
         return this.name() + " " + emoji;
     }
+
 }

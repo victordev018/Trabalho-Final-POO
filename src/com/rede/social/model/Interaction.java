@@ -13,4 +13,28 @@ public class Interaction {
         this.type = type;
         this.author = author;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public InteractionType getType() {
+        return type;
+    }
+
+    public void setType(InteractionType type) {
+        this.type = type;
+    }
+
+    public Profile getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(Profile author) {
+        this.author = author;
+    }
 }
