@@ -1,21 +1,27 @@
-package com.rede.social.model;
+package com.rede.social.application;
 
+import com.rede.social.model.AdvancedProfile;
+import com.rede.social.model.Post;
+import com.rede.social.model.Profile;
+import com.rede.social.repository.IPostRepository;
+import com.rede.social.repository.IProfileRepository;
 import com.rede.social.repository.impl.PostRepositoryImplFile;
 import com.rede.social.repository.impl.ProfileRepositoryImplFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class SocialNetwork {
     private Map<Profile, Profile> pendingFriendRequests;
-    private PostRepositoryImplFile postRepository;
-    private ProfileRepositoryImplFile profileRepository;
+    private IPostRepository postRepository;
+    private IProfileRepository profileRepository;
 
-    public SocialNetwork(Map<Profile, Profile> pendingFriendRequests,
-         PostRepositoryImplFile postRepository, ProfileRepositoryImplFile profileRepository) {
+    public SocialNetwork(IPostRepository postRepository, IProfileRepository profileRepository) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
+        this.pendingFriendRequests = new HashMap<>();
     }
 
     public Post createPost(String content, Profile owner) {
