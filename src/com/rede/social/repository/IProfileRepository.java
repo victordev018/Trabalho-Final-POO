@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IProfileRepository {
-    Boolean addProfile(Profile profile);
+    void addProfile(Profile profile);
     Optional<Profile> findProfileByEmail(String email);
     Optional<Profile> findProfileByUsername(String username);
     Optional<Profile> findProfileById(Integer id);

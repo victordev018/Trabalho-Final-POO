@@ -1,6 +1,12 @@
 package com.rede.social.application;
 
-import com.rede.social.model.*;
+import com.rede.social.exception.global.AlreadyExistsError;
+import com.rede.social.exception.global.NotFoundError;
+import com.rede.social.exception.profileException.ProfileAlreadyActivatedException;
+import com.rede.social.exception.profileException.ProfileUnauthorizedError;
+import com.rede.social.model.AdvancedProfile;
+import com.rede.social.model.Post;
+import com.rede.social.model.Profile;
 import com.rede.social.repository.IPostRepository;
 import com.rede.social.repository.IProfileRepository;
 import com.rede.social.repository.impl.PostRepositoryImplFile;
@@ -40,72 +46,53 @@ public class SocialNetwork {
         return new Profile(id, username, photo, email);
     }
 
-    public void addProfile(Profile profile) {
+    public void addProfile(Profile profile) throws AlreadyExistsError {
         Optional<Profile> foundedById = profileRepository.findProfileById(profile.getId());
         Optional<Profile> foundedByEmail = profileRepository.findProfileByEmail(profile.getEmail());
         Optional<Profile> foundedByName = profileRepository.findProfileByUsername(profile.getUsername());
 
-        // todo: adicionar lançamento de exceção caso perfil já exista com algum dos critérios de busca
-        if (foundedById.isEmpty()) {
-            return;
-        }
-        if (foundedByName.isEmpty()) {
-            return;
-        }
-        if (foundedByEmail.isEmpty()) {
-            return;
-        }
+        foundedByName.orElseThrow(() -> new AlreadyExistsError("Ja existe perfil com nome: " + profile.getUsername()));
+        foundedByEmail.orElseThrow(() -> new AlreadyExistsError("Ja existe perfil com email: " + profile.getEmail()));
+        foundedById.orElseThrow(() -> new AlreadyExistsError("Ja existe perfil com id: " + profile.getId()));
+
         profileRepository.addProfile(profile);
     }
 
-    public Profile findProfileById(Integer id) {
+    public Profile findProfileById(Integer id) throws NotFoundError{
         Optional<Profile> founded = profileRepository.findProfileById(id);
-        if (founded.isEmpty()) {
-            // todo: lançar exceção caso perfil não exista
-        }
-        return founded.get();
+        return founded.orElseThrow(() -> new NotFoundError("Não foi encontrado perfil com id: " + id));
     }
 
-    public Profile findProfileByEmail(String email) {
+    public Profile findProfileByEmail(String email) throws NotFoundError {
         Optional<Profile> founded = profileRepository.findProfileByEmail(email);
-        if (founded.isEmpty()) {
-            // todo: lançar exceção caso perfil não exista
-        }
-        return founded.get();
+        return founded.orElseThrow(() -> new NotFoundError("Não foi encontrado perfil com email: " + email));
     }
 
-    public Profile findProfileByUsername(String username) {
+    public Profile findProfileByUsername(String username) throws NotFoundError {
         Optional<Profile> founded = profileRepository.findProfileByUsername(username);
-        if (founded.isEmpty()) {
-            // todo: lançar exceção caso perfil não exista
-        }
-        return founded.get();
+        return founded.orElseThrow(() -> new NotFoundError("Não foi encontrado perfil com nome: " + username));
     }
 
-    public void activateProfile(String username) {
+    public void activateProfile(String username) throws NotFoundError, ProfileUnauthorizedError, ProfileAlreadyActivatedException {
         Optional<Profile> optionalProfile = profileRepository.findProfileByUsername(username);
-        if (optionalProfile.isEmpty()){
-            // todo: adicionar lançamento de exceção
-            return;
+        Profile profile = optionalProfile.orElseThrow(() -> new NotFoundError("Não foi encontrado perfil com nome: " + username));
+        if (!(profile instanceof AdvancedProfile)) {
+            throw new ProfileUnauthorizedError("somente perfis avançados podem ativar/desativar perfis.");
         }
-        Profile profile = optionalProfile.get();
-        if (profile instanceof AdvancedProfile) {
-            AdvancedProfile advancedProfile = (AdvancedProfile) profile;
-            advancedProfile.setStatus(true);
-        }
+        AdvancedProfile advancedProfile = (AdvancedProfile) profile;
+        if (advancedProfile.getStatus()) throw new ProfileAlreadyActivatedException("o perfil do " + username + " ja esta ativo.");
+        advancedProfile.setStatus(true);
     }
 
-    public void unactivateProfile(String username) {
+    public void unactivateProfile(String username) throws NotFoundError, ProfileUnauthorizedError, ProfileAlreadyActivatedException {
         Optional<Profile> optionalProfile = profileRepository.findProfileByUsername(username);
-        if (optionalProfile.isEmpty()){
-            // todo: adicionar lançamento de exceção
-            return;
+        Profile profile = optionalProfile.orElseThrow(() -> new NotFoundError("Não foi encontrado perfil com nome: " + username));
+        if (!(profile instanceof AdvancedProfile)) {
+            throw new ProfileUnauthorizedError("somente perfis avançados podem ativar/desativar perfis.");
         }
-        Profile profile = optionalProfile.get();
-        if (profile instanceof AdvancedProfile) {
-            AdvancedProfile advancedProfile = (AdvancedProfile) profile;
-            advancedProfile.setStatus(false);
-        }
+        AdvancedProfile advancedProfile = (AdvancedProfile) profile;
+        if (!advancedProfile.getStatus()) throw new ProfileAlreadyActivatedException("o perfil do " + username + " ja esta ativo.");
+        advancedProfile.setStatus(false);
     }
 
     public void sendRequest(Profile applicant, Profile receiver) {
