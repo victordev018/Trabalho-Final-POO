@@ -45,9 +45,9 @@ public class PostRepositoryImplFile implements IPostRepository {
     }
 
     @Override
-    public List<Post> listPostsByProfile(Profile profile) {
+    public List<Post> listPostsByProfile(Profile owner) {
         return this.posts.stream()
-                .filter(post -> post.getOwner().equals(profile))
+                .filter(post -> post.getOwner().equals(owner))
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
