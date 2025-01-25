@@ -6,7 +6,7 @@ public class IOUtil {
 
     private static Scanner in = new Scanner(System.in, "UTF-8").useDelimiter("\n");
 
-    public IOUtil(Scanner in) {}
+    public IOUtil() {}
 
     public String getText(String message) {
         System.out.print(message);
@@ -25,7 +25,7 @@ public class IOUtil {
     }
 
     public void showMessage(String message) {
-        System.out.print(message);
+        System.out.println(message);
     }
 
     public void closeScanner() {

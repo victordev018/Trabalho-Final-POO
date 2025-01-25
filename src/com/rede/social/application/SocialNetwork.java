@@ -38,11 +38,16 @@ public class SocialNetwork {
      */
     public Post createPost(String content, Profile owner) {
         List<Post> posts = postRepository.listPosts();
+        Post post;
         if (posts.isEmpty()) {
-            return new Post(1, content, owner);
+            post = new Post(1, content, owner);
+            owner.addPost(post);
+            return post;
         }
         Integer id = posts.get(posts.size() - 1).getId() + 1;
-        return new Post(id, content, owner);
+        post = new Post(id, content, owner);
+        owner.addPost(post);
+        return post;
     }
 
     /**
@@ -115,7 +120,7 @@ public class SocialNetwork {
      * @return uma instância de perfil avançado, com o id gerado baseado na quantidade de perfis existentes
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public AdvancedProfile createAdvancedPost(String username, String photo, String email) {
+    public AdvancedProfile createAdvancedProfile(String username, String photo, String email) {
         List<Profile> profiles = profileRepository.getAllProfiles();
         if (profiles.isEmpty()) {
             return new AdvancedProfile(1, username, photo, email);
