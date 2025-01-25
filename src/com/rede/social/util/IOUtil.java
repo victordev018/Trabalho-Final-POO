@@ -9,9 +9,15 @@ public class IOUtil {
     public IOUtil(Scanner in) {}
 
     public String getText(String message) {
-        System.out.println(message);
+        System.out.print(message);
         String result = in.nextLine();
         return result;
+    }
+
+    public int getInt(String message) {
+        System.out.print(message);
+        int number = in.nextInt();
+        return number;
     }
 
     public void showError(String error) {
@@ -19,7 +25,7 @@ public class IOUtil {
     }
 
     public void showMessage(String message) {
-        System.out.println(message);
+        System.out.print(message);
     }
 
     public void closeScanner() {

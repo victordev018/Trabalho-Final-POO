@@ -103,6 +103,15 @@ public class Profile {
         this.status = !this.status;
     }
 
+    public String toString() {
+        String dataFormated = String.format("""
+                ╔═══════════╦══════════════════╦══════════════════════════════╦════════════╗
+                ║ <ID> %-4d ║ @%-15s ║ %-28s ║ photo: %-1s  ║
+                ╚═══════════╩══════════════════╩══════════════════════════════╩════════════╝
+                """, id, username, email, photo);
+        return dataFormated;
+    }
+
     // equals and hashcode
     @Override
     public boolean equals(Object o) {

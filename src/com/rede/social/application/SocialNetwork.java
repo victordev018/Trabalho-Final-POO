@@ -167,6 +167,11 @@ public class SocialNetwork {
         return founded.get();
     }
 
+    // TODO: documentar este método
+    public List<Profile> listProfile() {
+        return this.profileRepository.getAllProfiles();
+    }
+
     /**
      * Método para ativar perfil se o perfil for instância de AdvancedProfile
      * @param username o nome de usuário do perfil a ser buscado no repositório
