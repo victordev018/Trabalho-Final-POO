@@ -5,14 +5,15 @@ import com.rede.social.exception.global.NotFoundError;
 import com.rede.social.model.Profile;
 import com.rede.social.repository.IProfileRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class ProfileRepositoryImplFile implements IProfileRepository {
     private final List<Profile> profiles;
 
-    public ProfileRepositoryImplFile(List<Profile> profiles) {
-        this.profiles = profiles;
+    public ProfileRepositoryImplFile() {
+        this.profiles = new ArrayList<>();
     }
 
     @Override
