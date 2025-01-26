@@ -10,7 +10,7 @@ public class IOUtil {
 
     public String getText(String message) {
         System.out.print(message);
-        String result = in.nextLine();
+        String result = in.next().trim();
         return result;
     }
 
@@ -26,6 +26,12 @@ public class IOUtil {
 
     public void showMessage(String message) {
         System.out.println(message);
+    }
+
+    public void clearScreen() {
+        System.out.print("Pressione <Enter> para continuar...");
+        in.next();
+        showMessage("\n".repeat(20));
     }
 
     public void closeScanner() {

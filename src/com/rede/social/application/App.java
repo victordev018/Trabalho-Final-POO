@@ -24,9 +24,9 @@ public class App {
     private SocialNetwork socialNetwork;
     private IOUtil ioUtil;
 
-    public App(SocialNetwork socialNetwork, IOUtil ioUtil) {
+    public App(SocialNetwork socialNetwork) {
         this.socialNetwork = socialNetwork;
-        this.ioUtil = ioUtil;
+        this.ioUtil = new IOUtil();
     }
 
     /**
@@ -62,7 +62,7 @@ public class App {
             new Option("listar perfis", this::listAllProfile, () -> socialNetwork.existsProfile()),
             new Option("ativar perfil", this::enableProfile, () -> socialNetwork.existsProfile()),
             new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsProfile()),
-            new Option("adicionar post", this::createPost, () -> socialNetwork.existsPost()),
+            new Option("adicionar post", this::createPost, () -> socialNetwork.existsProfile()),
             new Option("listar todos os posts", this::listAllPosts, () -> socialNetwork.existsPost()),
             new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost())
     );
@@ -102,7 +102,10 @@ public class App {
         // loop principal do programa
         while (!viewStack.isEmpty()) {
             viewStack.peek().run();
+            ioUtil.clearScreen();
         }
+
+        ioUtil.closeScanner();
     }
 
     // métodos relacionados ao gerenciamento de perfis
@@ -110,7 +113,8 @@ public class App {
     public void createProfile() {
         String username = ioUtil.getText("> Insira o seu nome de usuario: ");
         String email = ioUtil.getText("> Insira o seu email: ");
-        String photo = ioUtil.getText("> Insira uma foto(emogi): ");
+        int chosenPhoto = ioUtil.getInt("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ");
+        String photo = chosenPhoto == 1? "\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0" : "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0";
         int typeProfile = ioUtil.getInt("> tipo de perfil: (1-normal, 2-avançado): ");
         Profile newProfile = typeProfile == 1? socialNetwork.createProfile(username, photo, email) :
                 socialNetwork.createAdvancedProfile(username, photo, email);
@@ -119,6 +123,8 @@ public class App {
         } catch (AlreadyExistsError e) {
             ioUtil.showError("!Ja existe perfil com este nome ou email!");
         }
+
+        ioUtil.showMessage("-> perfil criado com sucesso!");
     }
 
     public void findProfile() {
@@ -147,7 +153,7 @@ public class App {
             return;
         }
         ioUtil.showMessage("-> Lista de perfis:");
-        profiles.forEach(profile -> ioUtil.showMessage(profile.toString()));
+        profiles.forEach(System.out::print);
     }
 
     public void enableProfile() {
@@ -163,10 +169,13 @@ public class App {
             socialNetwork.activateProfile(username);
         } catch (NotFoundError e) {
             ioUtil.showError("!Nao foi encontrado perfil com username: " + username);
+            return;
         } catch (ProfileUnauthorizedError e) {
             ioUtil.showError("O perfil nao e do tipo avancado, por isso nao sera ativado!");
+            return;
         } catch (ProfileAlreadyActivatedError e) {
             ioUtil.showError("O perfil ja esta ativo!");
+            return;
         }
 
         ioUtil.showMessage("-> perfil ativo com sucesso <-");
@@ -185,10 +194,13 @@ public class App {
             socialNetwork.unactivateProfile(username);
         } catch (NotFoundError e) {
             ioUtil.showError("!Nao foi encontrado perfil com username: " + username);
+            return;
         } catch (ProfileUnauthorizedError e) {
             ioUtil.showError("O perfil nao e do tipo avancado, por isso nao sera ativado!");
+            return;
         } catch (ProfileAlreadyDeactivatedError e) {
             ioUtil.showError("!O perfil ja esta desativado!");
+            return;
         }
 
         ioUtil.showMessage("-> perfil desativado com sucesso <-");
@@ -238,12 +250,9 @@ public class App {
     public void listPostByProfile() {
         ioUtil.showMessage("-> informações do perfil <-");
         String username = ioUtil.getText("> insira o username: ");
-        String email = ioUtil.getText("> insira o email: ");
 
         try {
             Profile foundByUsername = socialNetwork.findProfileByUsername(username);
-            Profile foundByEmail = socialNetwork.findProfileByEmail(email);
-
             List<Post> postsFromProfile = socialNetwork.listPostsByProfile(username);
             if (postsFromProfile.isEmpty()) {
                 ioUtil.showMessage("!O perfil de " + username + " não possui nenhum post!");
@@ -272,7 +281,7 @@ public class App {
                     interactionTypeIntegerMap.get(InteractionType.DISLIKE),
                     interactionTypeIntegerMap.get(InteractionType.LAUGH),
                     interactionTypeIntegerMap.get(InteractionType.SURPRISE));
-            ioUtil.showMessage(postFormated);
+            System.out.print(postFormated);
             return;
         }
 
@@ -282,7 +291,7 @@ public class App {
                 ╚═════════╩══════════════════╩══════════════════╩═══════════════════════════════════════════╝
                 """, post.getId(), post.getOwner().getUsername(),
                      post.getCreatedAt().format(fmt), post.getContent());
-        ioUtil.showMessage(postFormated);
+        System.out.print(postFormated);
     }
 
     private Map<InteractionType, Integer> getQuantityInteractionType(AdvancedPost post) {
