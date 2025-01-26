@@ -303,6 +303,15 @@ public class SocialNetwork {
         advancedPost.addInteraction(interaction);
     }
 
+    // TODO: fazer documentação dos métodos abaixo
+    public boolean existsProfile() {
+        return !profileRepository.getAllProfiles().isEmpty();
+    }
+
+    public boolean existsPost() {
+        return !postRepository.listPosts().isEmpty();
+    }
+
     /**
      * Método axuiliar com a lógica para verificar se uma interação já existe, excencial para evitar interações duplicadas
      * @param advancedPost instância de post avançado que permite interações

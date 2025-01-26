@@ -15,15 +15,94 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
+import java.util.function.Supplier;
 
 public class App {
 
+    Stack<Runnable> viewStack = new Stack<>();
     private SocialNetwork socialNetwork;
     private IOUtil ioUtil;
 
     public App(SocialNetwork socialNetwork, IOUtil ioUtil) {
         this.socialNetwork = socialNetwork;
         this.ioUtil = ioUtil;
+    }
+
+    /**
+     * Classe utilizada para encapsular a lógica de uma opção do menu
+     */
+    private class Option {
+        String title;
+        Runnable callback;
+        Supplier<Boolean> canShow;
+
+        /**
+         * @param title nome que que representará a opção
+         * @param callback função que será executada ao chamar a opção
+         * @param canShow função booleana que controla quando essa opção poderá ser exibida
+         */
+        Option(String title, Runnable callback, Supplier<Boolean> canShow) {
+            this.title = title;
+            this.callback = callback;
+            this.canShow = canShow;
+        }
+
+        @Override
+        public String toString() {
+            return title;
+        }
+
+    }
+
+    // criando um menu dinâmico
+    private List<Option> options = List.of(
+            new Option("adicionar perfil", this::createProfile, () -> true),
+            new Option("buscar perfil", this::findProfile, () -> socialNetwork.existsProfile()),
+            new Option("listar perfis", this::listAllProfile, () -> socialNetwork.existsProfile()),
+            new Option("ativar perfil", this::enableProfile, () -> socialNetwork.existsProfile()),
+            new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsProfile()),
+            new Option("adicionar post", this::createPost, () -> socialNetwork.existsPost()),
+            new Option("listar todos os posts", this::listAllPosts, () -> socialNetwork.existsPost()),
+            new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost())
+    );
+
+    // TODO: documentar métodos
+
+    public void showMenu(List<Option> options) {
+        int numberOption = 0;
+        for (Option o : options) {
+            ioUtil.showMessage("-> " + ++numberOption + " - " + o.title);
+        }
+        ioUtil.showMessage("-> " + 0 + " - Sair");
+    }
+
+    public void mainMenu() {
+        List<Option> optionsToShow = options.stream()
+                .filter(op -> op.canShow.get()).toList();
+        showMenu(optionsToShow);
+        int chosen = ioUtil.getInt("\n> opcao: ");
+        if (chosen > optionsToShow.size() || chosen < 0) {
+            ioUtil.showMessage("! Informe uma opcao válida !");
+            return;
+        }
+
+        if (chosen == 0) {
+            viewStack.pop();
+            return;
+        }
+
+        // executa a função callback da opção escolhida
+        options.get(chosen-1).callback.run();
+    }
+
+    public void run() {
+        viewStack.push(this::mainMenu);
+
+        // loop principal do programa
+        while (!viewStack.isEmpty()) {
+            viewStack.peek().run();
+        }
     }
 
     // métodos relacionados ao gerenciamento de perfis
