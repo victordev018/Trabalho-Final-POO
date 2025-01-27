@@ -27,6 +27,7 @@ public class SocialNetwork {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
         this.pendingFriendRequests = new HashMap<>();
+        this.interactions = new ArrayList<>();
     }
 
     /**
@@ -265,7 +266,7 @@ public class SocialNetwork {
     public void refuseRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, RequestNotFoundError {
         Profile applicant = this.profileRepository.findProfileByUsername(usernameApplicant).get();
         Profile receiver = this.profileRepository.findProfileByUsername(usernameReceiver).get();
-        if (!pendingFriendRequests.containsKey(applicant) || !pendingFriendRequests.get(receiver).equals(receiver)){
+        if (!pendingFriendRequests.containsKey(applicant) || !pendingFriendRequests.get(applicant).equals(receiver)){
             throw new RequestNotFoundError("solicitacao de amizade nao encontrada.");
         }
         pendingFriendRequests.remove(applicant);
@@ -320,8 +321,25 @@ public class SocialNetwork {
         return !profileRepository.getAllProfiles().isEmpty();
     }
 
+    // TODO: documentar método
     public boolean existsPost() {
         return !postRepository.listPosts().isEmpty();
+    }
+
+    // TODO: documentar método
+    public boolean existsAdvancedPost() {
+        List<AdvancedPost> listAdvancedPosts = getAdvancedPosts();
+        return !listAdvancedPosts.isEmpty();
+    }
+
+    public List<AdvancedPost> getAdvancedPosts() {
+        List<AdvancedPost> advancedPosts = new ArrayList<>();
+        for (Post p : listPosts()) {
+            if (p instanceof AdvancedPost) {
+                advancedPosts.add((AdvancedPost) p);
+            }
+        }
+        return advancedPosts;
     }
 
     /**
@@ -332,8 +350,7 @@ public class SocialNetwork {
      */
     private boolean interactionAlreadyExists(AdvancedPost advancedPost, Interaction interaction) {
         Stream<Interaction> interactionsFromPost = advancedPost.listInteractions().stream();
-        return interactionsFromPost.anyMatch( i -> i.getAuthor().equals(interaction.getAuthor()) &&
-                i.getType() == interaction.getType());
+        return interactionsFromPost.anyMatch( i -> i.getAuthor().equals(interaction.getAuthor()));
     }
 }
 
