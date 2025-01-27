@@ -4,6 +4,8 @@ import com.rede.social.exception.global.NotFoundError;
 import com.rede.social.exception.profileException.ProfileAlreadyActivatedError;
 import com.rede.social.exception.profileException.ProfileAlreadyDeactivatedError;
 import com.rede.social.exception.profileException.ProfileUnauthorizedError;
+import com.rede.social.exception.requestException.FriendshipAlreadyExistsError;
+import com.rede.social.exception.requestException.RequestNotFoundError;
 import com.rede.social.model.AdvancedPost;
 import com.rede.social.model.Interaction;
 import com.rede.social.model.Post;
@@ -12,10 +14,7 @@ import com.rede.social.model.enums.InteractionType;
 import com.rede.social.util.IOUtil;
 
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class App {
@@ -64,7 +63,9 @@ public class App {
             new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsProfile()),
             new Option("adicionar post", this::createPost, () -> socialNetwork.existsProfile()),
             new Option("listar todos os posts", this::listAllPosts, () -> socialNetwork.existsPost()),
-            new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost())
+            new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost()),
+            new Option("solicitar amizade", this::sendRequest, () -> socialNetwork.existsProfile()),
+            new Option("aceitar solicitacao", this::acceptRequest, () -> socialNetwork.existsPendingFriendRequest())
     );
 
     // TODO: documentar métodos
@@ -93,7 +94,7 @@ public class App {
         }
 
         // executa a função callback da opção escolhida
-        options.get(chosen-1).callback.run();
+        optionsToShow.get(chosen-1).callback.run();
     }
 
     public void run() {
@@ -324,6 +325,62 @@ public class App {
     }
 
     // métodos relacionado ao gerenciamento de solicitações
+
+    public void sendRequest() {
+        ioUtil.showMessage("-> solicitar amizade <-");
+        ioUtil.showMessage(" -- informações do solicitante --");
+        String applicantUsername = ioUtil.getText("> username: ");
+        ioUtil.showMessage("-- informações do recebedor --");
+        String receiverUsername = ioUtil.getText("> username: ");
+
+        try {
+            socialNetwork.sendRequest(applicantUsername, receiverUsername);
+        } catch (NotFoundError | AlreadyExistsError | FriendshipAlreadyExistsError e) {
+            ioUtil.showError(e.getMessage());
+            return;
+        }
+
+        ioUtil.showMessage("-> soclicitação enviada de " + applicantUsername + " para " + receiverUsername);
+    }
+
+    public void acceptRequest() {
+        if (!socialNetwork.existsPendingFriendRequest()) {
+            ioUtil.showMessage("!Não existe solicitações pendentes!");
+            return;
+        }
+
+        Map<Profile, Profile> pendingRequests = socialNetwork.getPendingFriendRequests();
+        ioUtil.showMessage("-> lista de solicitacoes <-");
+        this.showFriendRequests(pendingRequests);
+
+        ioUtil.showMessage("-> informe solicitacao para ser aceita <-");
+        String applicantUsername = ioUtil.getText("> username solicitante: ");
+        String receiverUsername = ioUtil.getText("> username recebedor: ");
+
+        try {
+            socialNetwork.acceptRequest(applicantUsername, receiverUsername);
+        } catch (NotFoundError | RequestNotFoundError e) {
+            ioUtil.showError(e.getMessage());
+            return;
+        }
+
+        ioUtil.showMessage("-> solicitacao aceita, agora " + applicantUsername + " e " + receiverUsername + " sao amigos!");
+    }
+
+    private void showFriendRequests(Map<Profile, Profile> pendingRequests) {
+        Set<Profile> keys = pendingRequests.keySet();
+        int idRequest = 0;
+        ioUtil.showMessage("      id        solicitante         recebedor");
+        for (Profile applicant : keys) {
+            Profile receiver = pendingRequests.get(applicant);
+            String profilesFormated = String.format("""
+                ╔═══════════╦══════════════════╦══════════════════╗
+                ║ <ID> %-4d ║ @%-15s ║ @%-15s ║ 
+                ╚═══════════╩══════════════════╩══════════════════╝
+                    """, ++idRequest, applicant.getUsername(), receiver.getUsername());
+            System.out.print(profilesFormated);
+        }
+    }
 
     // métodos relacionado ao gerenciamento de interações
 

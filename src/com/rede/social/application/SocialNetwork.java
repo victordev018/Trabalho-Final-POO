@@ -226,7 +226,9 @@ public class SocialNetwork {
     public void sendRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, AlreadyExistsError, FriendshipAlreadyExistsError {
         Profile applicant = this.profileRepository.findProfileByUsername(usernameApplicant).get();
         Profile receiver = this.profileRepository.findProfileByUsername(usernameReceiver).get();
-        if (pendingFriendRequests.containsKey(applicant) && pendingFriendRequests.get(receiver).equals(receiver)) {
+        if (pendingFriendRequests.containsKey(applicant) && pendingFriendRequests.get(applicant).equals(receiver) ||
+                (pendingFriendRequests.containsValue(applicant) && pendingFriendRequests.containsKey(receiver) &&
+                pendingFriendRequests.get(receiver).equals(applicant))) {
             throw new AlreadyExistsError("solicitacao ja existe.");
         }
         if (applicant.getFriends().contains(receiver)){
@@ -267,6 +269,16 @@ public class SocialNetwork {
             throw new RequestNotFoundError("solicitacao de amizade nao encontrada.");
         }
         pendingFriendRequests.remove(applicant);
+    }
+
+    // TODO: fazer documentação do seguinte método
+    public boolean existsPendingFriendRequest() {
+        return !this.pendingFriendRequests.isEmpty();
+    }
+
+    // TODO: fazer documentação do seguinte método
+    public Map<Profile, Profile> getPendingFriendRequests() {
+        return this.pendingFriendRequests;
     }
 
     /**
