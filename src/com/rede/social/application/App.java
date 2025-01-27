@@ -1,9 +1,13 @@
 package com.rede.social.application;
 import com.rede.social.exception.global.AlreadyExistsError;
 import com.rede.social.exception.global.NotFoundError;
+import com.rede.social.exception.interactionException.InteractionDuplicatedError;
+import com.rede.social.exception.interactionException.PostUnauthorizedError;
 import com.rede.social.exception.profileException.ProfileAlreadyActivatedError;
 import com.rede.social.exception.profileException.ProfileAlreadyDeactivatedError;
 import com.rede.social.exception.profileException.ProfileUnauthorizedError;
+import com.rede.social.exception.requestException.FriendshipAlreadyExistsError;
+import com.rede.social.exception.requestException.RequestNotFoundError;
 import com.rede.social.model.AdvancedPost;
 import com.rede.social.model.Interaction;
 import com.rede.social.model.Post;
@@ -12,10 +16,7 @@ import com.rede.social.model.enums.InteractionType;
 import com.rede.social.util.IOUtil;
 
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class App {
@@ -64,7 +65,11 @@ public class App {
             new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsProfile()),
             new Option("adicionar post", this::createPost, () -> socialNetwork.existsProfile()),
             new Option("listar todos os posts", this::listAllPosts, () -> socialNetwork.existsPost()),
-            new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost())
+            new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost()),
+            new Option("solicitar amizade", this::sendRequest, () -> socialNetwork.existsProfile()),
+            new Option("aceitar solicitacao", this::acceptRequest, () -> socialNetwork.existsPendingFriendRequest()),
+            new Option("recusar solicitacao", this::refuseRequest, () -> socialNetwork.existsPendingFriendRequest()),
+            new Option("adiconar interacao em post", this::addInteraction, () -> socialNetwork.existsAdvancedPost())
     );
 
     // TODO: documentar métodos
@@ -72,9 +77,9 @@ public class App {
     public void showMenu(List<Option> options) {
         int numberOption = 0;
         for (Option o : options) {
-            ioUtil.showMessage("-> " + ++numberOption + " - " + o.title);
+            System.out.printf("-> %-2d - %s%n", ++numberOption, o.title);
         }
-        ioUtil.showMessage("-> " + 0 + " - Sair");
+        System.out.printf("-> %-2d - Sair%n", 0);
     }
 
     public void mainMenu() {
@@ -93,7 +98,7 @@ public class App {
         }
 
         // executa a função callback da opção escolhida
-        options.get(chosen-1).callback.run();
+        optionsToShow.get(chosen-1).callback.run();
     }
 
     public void run() {
@@ -211,18 +216,9 @@ public class App {
     public void createPost() {
         ioUtil.showMessage("-> informações do perfil <-");
         String username = ioUtil.getText("> insira o username: ");
-        String email = ioUtil.getText("> insira o email: ");
 
         try {
             Profile foundByUsername = socialNetwork.findProfileByUsername(username);
-            Profile foundByEmail = socialNetwork.findProfileByEmail(email);
-
-            if (!(foundByUsername.getEmail().equals(foundByEmail.getEmail()) &&
-                    foundByEmail.getUsername().equals(foundByUsername.getUsername()))) {
-                ioUtil.showError("!As informações não são do mesmo perfil!");
-                return;
-            }
-
             String contentPost = ioUtil.getText("> conteudo do post: ");
             int typePost = ioUtil.getInt("> tipo do post: (1-normal, 2-avançado): ");
             Post newPost = typePost == 1 ? socialNetwork.createPost(contentPost, foundByUsername):
@@ -325,6 +321,123 @@ public class App {
 
     // métodos relacionado ao gerenciamento de solicitações
 
+    public void sendRequest() {
+        ioUtil.showMessage("-> solicitar amizade <-");
+        ioUtil.showMessage(" -- informações do solicitante --");
+        String applicantUsername = ioUtil.getText("> username: ");
+        ioUtil.showMessage("-- informações do recebedor --");
+        String receiverUsername = ioUtil.getText("> username: ");
+
+        try {
+            socialNetwork.sendRequest(applicantUsername, receiverUsername);
+            ioUtil.showMessage("-> soclicitação enviada de " + applicantUsername + " para " + receiverUsername);
+        } catch (NotFoundError | AlreadyExistsError | FriendshipAlreadyExistsError e) {
+            ioUtil.showError(e.getMessage());
+        }
+    }
+
+    public void acceptRequest() {
+        if (!socialNetwork.existsPendingFriendRequest()) {
+            ioUtil.showMessage("!Não existe solicitações pendentes!");
+            return;
+        }
+
+        Map<Profile, Profile> pendingRequests = socialNetwork.getPendingFriendRequests();
+        ioUtil.showMessage("-> lista de solicitacoes <-");
+        this.showFriendRequests(pendingRequests);
+
+        ioUtil.showMessage("-> informe solicitacao para ser aceita <-");
+        String applicantUsername = ioUtil.getText("> username solicitante: ");
+        String receiverUsername = ioUtil.getText("> username recebedor: ");
+
+        try {
+            socialNetwork.acceptRequest(applicantUsername, receiverUsername);
+            ioUtil.showMessage("-> solicitacao aceita, agora " + applicantUsername + " e " + receiverUsername + " sao amigos!");
+        } catch (NotFoundError | RequestNotFoundError e) {
+            ioUtil.showError(e.getMessage());
+        }
+    }
+
+    public void refuseRequest() {
+        if (!socialNetwork.existsPendingFriendRequest()) {
+            ioUtil.showMessage("!Não existe solicitações pendentes!");
+            return;
+        }
+
+        Map<Profile, Profile> pendingRequests = socialNetwork.getPendingFriendRequests();
+        ioUtil.showMessage("-> lista de solicitacoes <-");
+        this.showFriendRequests(pendingRequests);
+
+        ioUtil.showMessage("-> informe solicitacao para ser recusada <-");
+        String applicantUsername = ioUtil.getText("> username solicitante: ");
+        String receiverUsername = ioUtil.getText("> username recebedor: ");
+
+        try {
+            socialNetwork.refuseRequest(applicantUsername, receiverUsername);
+            ioUtil.showMessage("-> solicitacao recusada com sucesso!");
+        } catch (NotFoundError | RequestNotFoundError e) {
+            ioUtil.showError(e.getMessage());
+        }
+    }
+
+    private void showFriendRequests(Map<Profile, Profile> pendingRequests) {
+        Set<Profile> keys = pendingRequests.keySet();
+        int idRequest = 0;
+        ioUtil.showMessage("      id        solicitante         recebedor");
+        for (Profile applicant : keys) {
+            Profile receiver = pendingRequests.get(applicant);
+            String profilesFormated = String.format("""
+                ╔═══════════╦══════════════════╦══════════════════╗
+                ║ <ID> %-4d ║ @%-15s ║ @%-15s ║ 
+                ╚═══════════╩══════════════════╩══════════════════╝
+                    """, ++idRequest, applicant.getUsername(), receiver.getUsername());
+            System.out.print(profilesFormated);
+        }
+    }
+
     // métodos relacionado ao gerenciamento de interações
 
+    public void addInteraction() {
+        if (!socialNetwork.existsAdvancedPost()) {
+            ioUtil.showError("!Nao existe posts avançados para poder interagir!");
+        }
+
+        // informações do perfil de quem deseja fazer a interação
+        ioUtil.showMessage("-> informacao do perfil que deseja interagir com post <-");
+        String username = ioUtil.getText("> username: ");
+        Profile owner;
+        try {
+            owner = socialNetwork.findProfileByUsername(username);
+        } catch (NotFoundError e) {
+            ioUtil.showError(e.getMessage());
+            return;
+        }
+
+        // exibir posts avançados que podem receber interações
+        List<AdvancedPost> advancedPostList = socialNetwork.getAdvancedPosts();
+        ioUtil.showMessage("-> lista de posts avançados <-");
+        advancedPostList.forEach(this::showPost);
+
+        ioUtil.showMessage("-> informaçao do post que deseja interagir <-");
+        int idPost = ioUtil.getInt("> id do post: ");
+        InteractionType interactionType = this.getInteractionType();
+        Interaction interaction = socialNetwork.createInteraction(interactionType, owner);
+
+        // tentando criar e adiconar interação
+        try {
+            socialNetwork.addInteraction(idPost, interaction);
+            ioUtil.showMessage("-> interação adiconada com sucesso✅!");
+        } catch (PostUnauthorizedError | InteractionDuplicatedError | NotFoundError e) {
+            ioUtil.showError(e.getMessage());
+        }
+    }
+
+    private InteractionType getInteractionType() {
+        ioUtil.showMessage("-> escolha um tipo de interacao:");
+        int chosen = ioUtil.getInt("> (1-👍 2-👎 3-😂 4-😲): ");
+        if (chosen == 1) return InteractionType.LIKE;
+        if (chosen == 2) return InteractionType.DISLIKE;
+        if (chosen == 3) return InteractionType.LAUGH;
+        return InteractionType.SURPRISE;
+    }
 }
