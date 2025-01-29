@@ -74,6 +74,10 @@ public class App {
 
     // TODO: documentar métodos
 
+    /**
+     * Método que retorna o menu atualizado, com todas as opções possíveis no momento.
+     * @param options é uma lista de objetos do tipo {@link Option} e mostra ao usuário as opções no menu
+     * */
     public void showMenu(List<Option> options) {
         int numberOption = 0;
         for (Option o : options) {
@@ -82,6 +86,9 @@ public class App {
         System.out.printf("-> %-2d - Sair%n", 0);
     }
 
+    /**
+     * Método que chama a função presente na opção escolhida pelo usuário, exibindo uma mensagem de erro em caso de opção inválida.
+     */
     public void mainMenu() {
         List<Option> optionsToShow = options.stream()
                 .filter(op -> op.canShow.get()).toList();
@@ -101,6 +108,11 @@ public class App {
         optionsToShow.get(chosen-1).callback.run();
     }
 
+    /**
+     * Método que mantém o menu ativo enquanto ele ainda possui opções que podem ser feitas.
+     *  A função {@link #mainMenu()} é adicionada logo no início do método, inserindo-a na pilha.
+     *  {@code viewStack} é uma pilha que o controla o menu, executando-a por meio do método {@link Runnable#run()}}
+     */
     public void run() {
         viewStack.push(this::mainMenu);
 
@@ -115,6 +127,11 @@ public class App {
 
     // métodos relacionados ao gerenciamento de perfis
 
+    /**
+     * Método para criação de perfis, adicionando perfis normais ou avançados na classe {@link #socialNetwork}.
+     * Além de solicitar nome, email e foto de perfil, permite a escolha do tipo de perfil (social ou avançado).
+     * @throws AlreadyExistsError lançada em caso de já existir um perfil igual ao que está sendo criado.
+     */
     public void createProfile() {
         String username = ioUtil.getText("> Insira o seu nome de usuario: ");
         String email = ioUtil.getText("> Insira o seu email: ");
@@ -132,6 +149,10 @@ public class App {
         ioUtil.showMessage("-> perfil criado com sucesso!");
     }
 
+    /**
+     * Método para procurar um perfil na classe {@link #socialNetwork} por username ou email, localizando-o nessa sequência.
+     * @throws NotFoundError  Em caso do usuário não ser achado.
+     */
     public void findProfile() {
         ioUtil.showMessage(" -> Voce pode fazer a busca por: username ou email <- ");
         String searchTerm = ioUtil.getText("> Insira o username ou email: ");
@@ -151,6 +172,11 @@ public class App {
         }
     }
 
+    /**
+     * Método que lista todos os perfis cadastrados na classe {@link #socialNetwork}.
+     * Verifica se existem perfis cadastrados e, em caso de não existir, exibe uma mensagem informando.
+     * Caso exista, exibe a lista de perfis presentes.
+     */
     public void listAllProfile() {
         List<Profile> profiles = socialNetwork.listProfile();
         if (profiles.isEmpty()) {
@@ -161,6 +187,12 @@ public class App {
         profiles.forEach(System.out::print);
     }
 
+    /**
+     * Método para ativar um perfil avançado, verificando a presença de perfis cadastrados e recebendo o username de um deles
+     * @throws NotFoundError caso o username recebido não tenha sido encontrado em nenhum perfil.
+     * @throws ProfileUnauthorizedError caso o perfil não seja do tipo avançado.
+     * @throws ProfileAlreadyActivatedError caso o perfil já esteja ativo.
+     */
     public void enableProfile() {
 
         // verificando se existe perfis salvos
@@ -186,6 +218,12 @@ public class App {
         ioUtil.showMessage("-> perfil ativo com sucesso <-");
     }
 
+    /**
+     * Método para desativar um perfil da classe {@link #socialNetwork}, recebendo o username escolhido de uma lista de perfis salvos.
+     * @throws NotFoundError caso o username recebido não tenha sido encontrado em nenhum perfil.
+     * @throws ProfileUnauthorizedError caso o perfil não seja do tipo avançado.
+     * @throws ProfileAlreadyActivatedError caso o perfil já esteja desativado.
+     */
     public void disableProfile() {
 
         // verificando se existe perfis salvos
@@ -213,6 +251,10 @@ public class App {
 
     // métodos relacionado ao gerenciamento de publicações
 
+    /**
+     * Método para criar um novo post em um perfil, recebendo conteúdo e informações do post.
+     * @throws NotFoundError caso o perfil não seja encontrado.
+     */
     public void createPost() {
         ioUtil.showMessage("-> informações do perfil <-");
         String username = ioUtil.getText("> insira o username: ");
@@ -232,6 +274,10 @@ public class App {
         }
     }
 
+    /**
+     * Método para listar todas os post na classe {@link #socialNetwork}.
+     * Verifica se existem posts e exibe-os, caso haja post cadastrados.
+     */
     public void listAllPosts() {
         List<Post> posts = socialNetwork.listPosts();
         if (posts.isEmpty()) {
@@ -243,6 +289,11 @@ public class App {
         posts.forEach(this::showPost);
     }
 
+    /**
+     * Método para listar todos os posts de um perfil.
+     * Solicita o username do perfil, verifica-o na {@link #socialNetwork} e verifica se possui posts cadastrados, retornando-os caso haja.
+     * @throws NotFoundError caso o username do perfil não seja encontrado.
+     */
     public void listPostByProfile() {
         ioUtil.showMessage("-> informações do perfil <-");
         String username = ioUtil.getText("> insira o username: ");
@@ -262,6 +313,10 @@ public class App {
         }
     }
 
+    /**
+     * Método que exibe as informações de um post, verificando se o post é uma instância da classe {@link AdvancedPost} e exibindo as interações caso seja.
+     * @param post pode ser do tipo {@link Post} ou {@link AdvancedPost} e é o post a ser exibido.
+     */
     private void showPost(Post post) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         String postFormated;
@@ -286,10 +341,17 @@ public class App {
                 ║ <ID> %-2d ║ @%-15s ║ %-16s ║ %-40s  ║
                 ╚═════════╩══════════════════╩══════════════════╩═══════════════════════════════════════════╝
                 """, post.getId(), post.getOwner().getUsername(),
-                     post.getCreatedAt().format(fmt), post.getContent());
+                post.getCreatedAt().format(fmt), post.getContent());
         System.out.print(postFormated);
     }
 
+    /**
+     * Método que busca e retorna o número de cada interação em um post do tipo {@link AdvancedPost}.
+     * Conta a quantidade de interações( curtida, descurtida, risos e surpresa) e armazena elas em um {@link java.util.Map} do tipo {@link InteractionType}.
+     *
+     * @param post o {@link AdvancedPost} que terá suas interações contadas.
+     * @return um {@link java.util.Map} contendo o número de cada interação feita no post
+     */
     private Map<InteractionType, Integer> getQuantityInteractionType(AdvancedPost post) {
         List<Interaction> interactions = post.listInteractions();
         int like = 0, dislike = 0, laugh = 0, surprise = 0;
@@ -321,6 +383,12 @@ public class App {
 
     // métodos relacionado ao gerenciamento de solicitações
 
+    /**
+     * Método para enviar solicitações de amizade entre dois usuários, recebendo username de ambos
+     * @throws NotFoundError caso um dos usuários não exista.
+     * @throws AlreadyExistsError caso a solicitação de amizade já tenha sido feita antes.
+     * @throws FriendshipAlreadyExistsError caso os usuários já sejam amigos.
+     */
     public void sendRequest() {
         ioUtil.showMessage("-> solicitar amizade <-");
         ioUtil.showMessage(" -- informações do solicitante --");
@@ -336,6 +404,11 @@ public class App {
         }
     }
 
+    /**
+     * Método que aceita solicitações de amizade entre usuários, exibindo lista de solicitações pendentes.
+     * @throws NotFoundError caso algum dos usuários não exista na rede social.
+     * @throws RequestNotFoundError caso a solicitação de amizade não tenha sido feita.
+     */
     public void acceptRequest() {
         if (!socialNetwork.existsPendingFriendRequest()) {
             ioUtil.showMessage("!Não existe solicitações pendentes!");
@@ -358,6 +431,11 @@ public class App {
         }
     }
 
+    /**
+     *  Método que recusa uma solicitação de amizade usuários, exibindo lista de solicitações pendentes.
+     *  @throws NotFoundError caso algum dos usuários não exista na rede social.
+     *  @throws RequestNotFoundError caso a solicitação de amizade não tenha sido feita.
+     */
     public void refuseRequest() {
         if (!socialNetwork.existsPendingFriendRequest()) {
             ioUtil.showMessage("!Não existe solicitações pendentes!");
@@ -380,6 +458,10 @@ public class App {
         }
     }
 
+    /**
+     * Método que exibe as solicitações de amizade pendentes, com base num id de solicitação, nome do solicitante e recebedor.
+     * @param pendingRequests É um mapa que contém as solicitações pendentes, onde a chave = solicitante e o valor = recebedor.
+     */
     private void showFriendRequests(Map<Profile, Profile> pendingRequests) {
         Set<Profile> keys = pendingRequests.keySet();
         int idRequest = 0;
@@ -395,8 +477,16 @@ public class App {
         }
     }
 
+
     // métodos relacionado ao gerenciamento de interações
 
+    /**
+     * Método que adiciona uma interação a um {@link AdvancedPost}, permitindo escolher post específico de um perfil.
+     * @throws NotFoundError caso o perfil ou post não exista.
+     * @throws PostUnauthorizedError caso o usuário não tenha permissão para interagir com o post.
+     * @throws InteractionDuplicatedError caso a interação já tenha sido realizada no post.
+     *
+     */
     public void addInteraction() {
         if (!socialNetwork.existsAdvancedPost()) {
             ioUtil.showError("!Nao existe posts avançados para poder interagir!");
@@ -432,6 +522,10 @@ public class App {
         }
     }
 
+    /**
+     * Método para escolher um tipo de interação a ser usada.
+     * @return o tipo de interação escolhido pelo usuário.
+     */
     private InteractionType getInteractionType() {
         ioUtil.showMessage("-> escolha um tipo de interacao:");
         int chosen = ioUtil.getInt("> (1-👍 2-👎 3-😂 4-😲): ");
