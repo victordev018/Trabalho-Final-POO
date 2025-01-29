@@ -1,12 +1,24 @@
 package com.rede.social.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 
 public class Post {
 
+    @JsonProperty("id")
     private int id;
+
+    @JsonProperty("content")
     private String content;
+
+    @JsonProperty("createdAt")
     private LocalDateTime createdAt;
+
+    @JsonProperty("type")
+    private String type;
+
+    @JsonProperty("owner")
     private Profile owner;
 
     public Post(int id, String content, Profile owner) {
@@ -38,6 +50,14 @@ public class Post {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Profile getOwner() {

@@ -1,26 +1,55 @@
 package com.rede.social.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Profile {
-    private int id;
-    private String username;
-    private String photo;
-    private String email;
-    private Boolean status;
-    private List<Profile> friends;
-    private List<Post> posts;
 
-    public Profile(int id, String username, String photo, String email) {
+    @JsonProperty("id")
+    private int id;
+
+    @JsonProperty("username")
+    private String username;
+
+    @JsonProperty("photo")
+    private String photo;
+
+    @JsonProperty("email")
+    private String email;
+
+    @JsonProperty("status")
+    private Boolean status;
+
+    @JsonProperty("type")
+    private String type;
+
+    @JsonIgnore
+    private List<Profile> friends = new ArrayList<>();
+
+    @JsonIgnore
+    private List<Post> posts = new ArrayList<>();
+
+    public Profile() {
+    }
+
+    @JsonCreator
+    public Profile(
+            @JsonProperty("id") int id,
+            @JsonProperty("username") String username,
+            @JsonProperty("photo") String photo,
+            @JsonProperty("email") String email,
+            @JsonProperty("type") String type) {
         this.id = id;
         this.username = username;
         this.photo = photo;
         this.email = email;
         this.status = true;
-        this.friends = new ArrayList<>();
-        this.posts = new ArrayList<>();
+        this.type = type;
     }
 
     public int getId() {
@@ -61,6 +90,14 @@ public class Profile {
 
     public void setStatus(Boolean status) {
         this.status = status;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public List<Profile> getFriends() {

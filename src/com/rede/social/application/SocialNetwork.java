@@ -13,7 +13,9 @@ import com.rede.social.model.*;
 import com.rede.social.model.enums.InteractionType;
 import com.rede.social.repository.IPostRepository;
 import com.rede.social.repository.IProfileRepository;
+import com.rede.social.util.JsonFileHandler;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -28,6 +30,10 @@ public class SocialNetwork {
         this.profileRepository = profileRepository;
         this.pendingFriendRequests = new HashMap<>();
         this.interactions = new ArrayList<>();
+    }
+
+    public void saveProfiles() throws IOException {
+        JsonFileHandler.saveProfilesToFile(profileRepository.getAllProfiles(), "profiles.json");
     }
 
     /**
@@ -107,10 +113,10 @@ public class SocialNetwork {
     public Profile createProfile(String username, String photo, String email) {
         List<Profile> profiles = profileRepository.getAllProfiles();
         if (profiles.isEmpty()) {
-            return new Profile(1, username, photo, email);
+            return new Profile(1, username, photo, email, "PN");
         }
         Integer id = profiles.get(profiles.size() - 1).getId() + 1;
-        return new Profile(id, username, photo, email);
+        return new Profile(id, username, photo, email, "PN");
     }
 
     /**
@@ -124,10 +130,10 @@ public class SocialNetwork {
     public AdvancedProfile createAdvancedProfile(String username, String photo, String email) {
         List<Profile> profiles = profileRepository.getAllProfiles();
         if (profiles.isEmpty()) {
-            return new AdvancedProfile(1, username, photo, email);
+            return new AdvancedProfile(1, username, photo, email, "PA");
         }
         Integer id = profiles.get(profiles.size() - 1).getId() + 1;
-        return new AdvancedProfile(id, username, photo, email);
+        return new AdvancedProfile(id, username, photo, email, "PA");
     }
 
     /**

@@ -5,7 +5,9 @@ import com.rede.social.model.Post;
 import com.rede.social.model.Profile;
 import com.rede.social.repository.IPostRepository;
 import com.rede.social.repository.IProfileRepository;
+import com.rede.social.util.JsonFileHandler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +26,11 @@ public class PostRepositoryImplFile implements IPostRepository {
     @Override
     public void addPost(Post post) {
         this.posts.add(post);
+        try {
+            JsonFileHandler.savePostsToFile(posts, "posts.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

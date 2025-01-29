@@ -2,9 +2,12 @@ package com.rede.social.repository.impl;
 
 import com.rede.social.exception.global.AlreadyExistsError;
 import com.rede.social.exception.global.NotFoundError;
+import com.rede.social.model.AdvancedProfile;
 import com.rede.social.model.Profile;
 import com.rede.social.repository.IProfileRepository;
+import com.rede.social.util.JsonFileHandler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +17,23 @@ public class ProfileRepositoryImplFile implements IProfileRepository {
 
     public ProfileRepositoryImplFile() {
         this.profiles = new ArrayList<>();
+        loadProfiles();
+    }
+
+    // Carregar perfis do arquivo JSON
+    private void loadProfiles() {
+        try {
+            List<Profile> loadedProfiles = JsonFileHandler.loadProfilesFromFile("profiles.json");
+            List<Profile> listToSave = loadedProfiles.stream()
+                    .map(p -> p.getType().equals("PN") ? new Profile(p.getId(), p.getUsername(),
+                            p.getPhoto(), p.getEmail(), p.getType()) : new AdvancedProfile(p.getId(), p.getUsername(),
+                            p.getPhoto(), p.getEmail(), p.getType()))
+                    .toList();
+            if (loadedProfiles != null) {
+                profiles.addAll(listToSave);
+            }
+        } catch (IOException e) {
+        }
     }
 
     @Override

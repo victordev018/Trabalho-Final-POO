@@ -15,6 +15,7 @@ import com.rede.social.model.Profile;
 import com.rede.social.model.enums.InteractionType;
 import com.rede.social.util.IOUtil;
 
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
@@ -69,7 +70,7 @@ public class App {
             new Option("solicitar amizade", this::sendRequest, () -> socialNetwork.existsProfile()),
             new Option("aceitar solicitacao", this::acceptRequest, () -> socialNetwork.existsPendingFriendRequest()),
             new Option("recusar solicitacao", this::refuseRequest, () -> socialNetwork.existsPendingFriendRequest()),
-            new Option("adiconar interacao em post", this::addInteraction, () -> socialNetwork.existsAdvancedPost())
+            new Option("adicionar interacao em post", this::addInteraction, () -> socialNetwork.existsAdvancedPost())
     );
 
     // TODO: documentar métodos
@@ -100,6 +101,11 @@ public class App {
         }
 
         if (chosen == 0) {
+            try {
+                socialNetwork.saveProfiles();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             viewStack.pop();
             return;
         }
@@ -239,7 +245,7 @@ public class App {
             ioUtil.showError("!Nao foi encontrado perfil com username: " + username);
             return;
         } catch (ProfileUnauthorizedError e) {
-            ioUtil.showError("O perfil nao e do tipo avancado, por isso nao sera ativado!");
+            ioUtil.showError("O perfil nao e do tipo avancado, por isso nao sera desativado!");
             return;
         } catch (ProfileAlreadyDeactivatedError e) {
             ioUtil.showError("!O perfil ja esta desativado!");
@@ -398,7 +404,7 @@ public class App {
 
         try {
             socialNetwork.sendRequest(applicantUsername, receiverUsername);
-            ioUtil.showMessage("-> soclicitação enviada de " + applicantUsername + " para " + receiverUsername);
+            ioUtil.showMessage("-> solicitação enviada de " + applicantUsername + " para " + receiverUsername);
         } catch (NotFoundError | AlreadyExistsError | FriendshipAlreadyExistsError e) {
             ioUtil.showError(e.getMessage());
         }

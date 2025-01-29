@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jackson-annotations-2.18.2-javadoc">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/jackson/jackson-databind-2.15.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
