@@ -73,8 +73,6 @@ public class App {
             new Option("adicionar interacao em post", this::addInteraction, () -> socialNetwork.existsAdvancedPost())
     );
 
-    // TODO: documentar métodos
-
     /**
      * Método que retorna o menu atualizado, com todas as opções possíveis no momento.
      * @param options é uma lista de objetos do tipo {@link Option} e mostra ao usuário as opções no menu
@@ -141,9 +139,9 @@ public class App {
     public void createProfile() {
         String username = ioUtil.getText("> Insira o seu nome de usuario: ");
         String email = ioUtil.getText("> Insira o seu email: ");
-        int chosenPhoto = ioUtil.getInt("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ");
+        int chosenPhoto = ioUtil.getIntSpecific("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ",1,2);
         String photo = chosenPhoto == 1? "\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0" : "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0";
-        int typeProfile = ioUtil.getInt("> tipo de perfil: (1-normal, 2-avançado): ");
+        int typeProfile = ioUtil.getIntSpecific("> tipo de perfil: (1-normal, 2-avançado): ", 1, 2);
         Profile newProfile = typeProfile == 1? socialNetwork.createProfile(username, photo, email) :
                 socialNetwork.createAdvancedProfile(username, photo, email);
         try {
