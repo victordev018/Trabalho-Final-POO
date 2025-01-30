@@ -1,6 +1,7 @@
 package com.rede.social.repository.impl;
 
 import com.rede.social.exception.global.NotFoundError;
+import com.rede.social.model.AdvancedPost;
 import com.rede.social.model.Post;
 import com.rede.social.model.Profile;
 import com.rede.social.repository.IPostRepository;
@@ -21,6 +22,23 @@ public class PostRepositoryImplFile implements IPostRepository {
     public PostRepositoryImplFile(IProfileRepository profileRepository) {
         this.profileRepository = profileRepository;
         this.posts = new ArrayList<>();
+        loadPosts();
+    }
+
+    // Carregar posts do arquivo JSON
+    private void loadPosts() {
+        try {
+            List<Post> loadedPosts = JsonFileHandler.loadPostsFromFile("posts.json");
+            List<Post> listToSave = loadedPosts.stream()
+                    .map(p -> p.getType().equals("PN") ? new Post(p.getId(), p.getContent(),
+                            p.getType(), p.getOwner()) : new AdvancedPost(p.getId(), p.getContent(),
+                            p.getType(), p.getOwner()))
+                    .toList();
+            if (loadedPosts != null) {
+                posts.addAll(listToSave);
+            }
+        } catch (IOException e) {
+        }
     }
 
     @Override

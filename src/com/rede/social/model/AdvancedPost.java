@@ -7,8 +7,8 @@ public class AdvancedPost extends Post {
 
     private final List<Interaction> interactions;
 
-    public AdvancedPost(int id, String content, Profile owner) {
-        super(id, content, owner);
+    public AdvancedPost(int id, String content, String type, Profile owner) {
+        super(id, content, type, owner);
         this.interactions = new ArrayList<>();
     }
 
