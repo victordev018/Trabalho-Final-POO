@@ -282,12 +282,18 @@ public class SocialNetwork {
         pendingFriendRequests.remove(applicant);
     }
 
-    // TODO: fazer documentação do seguinte método
+    /**
+     * Método responsável por verificar se existe amizade pendente
+     * @return true se existir amizade ou false caso não exista amizade pendente
+     */
     public boolean existsPendingFriendRequest() {
         return !this.pendingFriendRequests.isEmpty();
     }
 
-    // TODO: fazer documentação do seguinte método
+    /**
+     * Método responsável por obter o Map de amizades pendentes
+     * @return retorna um Map<Profile, Profile> que representa as solicitações de amizades pendentes
+     */
     public Map<Profile, Profile> getPendingFriendRequests() {
         return this.pendingFriendRequests;
     }
@@ -326,22 +332,36 @@ public class SocialNetwork {
         advancedPost.addInteraction(interaction);
     }
 
-    // TODO: fazer documentação dos métodos abaixo
+    /**
+     * Método que retorna se existe perfil na lista de perfis
+     * @return retorna true se a lista de perfis não for vazia, caso contrário retorna false
+     */
     public boolean existsProfile() {
         return !profileRepository.getAllProfiles().isEmpty();
     }
 
-    // TODO: documentar método
+    /**
+     * Método que retorna se existe post na lista de posts
+     * @return retorna true se a lista de posts não for vazia, caso contrário retorna false
+     */
     public boolean existsPost() {
         return !postRepository.listPosts().isEmpty();
     }
 
-    // TODO: documentar método
+    /**
+     * Método que retorna se existe post avançado na lista de posts
+     * @return retorna true se a lista de posts filtrada por tipo de post avançado não for vazia, caso contrário retorna false
+     */
     public boolean existsAdvancedPost() {
         List<AdvancedPost> listAdvancedPosts = getAdvancedPosts();
         return !listAdvancedPosts.isEmpty();
     }
 
+    /**
+     * Método que filtra a lista de posts para retornar apenas os posts do tipo avançado
+     * @return retorna uma lista com todos os posts do tipo avançado
+    // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
+     */
     public List<AdvancedPost> getAdvancedPosts() {
         List<AdvancedPost> advancedPosts = new ArrayList<>();
         for (Post p : listPosts()) {
@@ -353,7 +373,7 @@ public class SocialNetwork {
     }
 
     /**
-     * Método axuiliar com a lógica para verificar se uma interação já existe, excencial para evitar interações duplicadas
+     * Método auxiliar com a lógica para verificar se uma interação já existe, essencial para evitar interações duplicadas
      * @param advancedPost instância de post avançado que permite interações
      * @param interaction instância da interação que deseja verificar se já existe
      * @return retorna true caso a interação já exista no post avançado ou false caso não exista
