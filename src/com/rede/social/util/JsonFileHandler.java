@@ -1,6 +1,7 @@
 package com.rede.social.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rede.social.model.Post;
 import com.rede.social.model.Profile;
 
@@ -9,7 +10,8 @@ import java.io.IOException;
 import java.util.List;
 
 public class JsonFileHandler {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
 
     /**
      * Salva a lista de perfis em um arquivo JSON

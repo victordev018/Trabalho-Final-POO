@@ -36,6 +36,10 @@ public class SocialNetwork {
         JsonFileHandler.saveProfilesToFile(profileRepository.getAllProfiles(), "profiles.json");
     }
 
+    public void savePosts() throws IOException {
+        JsonFileHandler.savePostsToFile(postRepository.listPosts(), "posts.json");
+    }
+
     /**
      * Método responsável por executar a lógica de criar um post
      * @param content o conteúdo do post a ser criado
@@ -47,12 +51,12 @@ public class SocialNetwork {
         List<Post> posts = postRepository.listPosts();
         Post post;
         if (posts.isEmpty()) {
-            post = new Post(1, content, owner);
+            post = new Post(1, content, "PN", owner);
             owner.addPost(post);
             return post;
         }
         Integer id = posts.get(posts.size() - 1).getId() + 1;
-        post = new Post(id, content, owner);
+        post = new Post(id, content, "PN", owner);
         owner.addPost(post);
         return post;
     }
@@ -67,10 +71,10 @@ public class SocialNetwork {
     public AdvancedPost createAdvancedPost(String content, Profile owner) {
         List<Post> posts = postRepository.listPosts();
         if (posts.isEmpty()) {
-            return new AdvancedPost(1, content, owner);
+            return new AdvancedPost(1, content, "PA", owner);
         }
         Integer id = posts.get(posts.size() - 1).getId() + 1;
-        return new AdvancedPost(id, content, owner);
+        return new AdvancedPost(id, content, "PA", owner);
     }
 
     /**
@@ -235,7 +239,7 @@ public class SocialNetwork {
         Profile receiver = this.profileRepository.findProfileByUsername(usernameReceiver).get();
         if (pendingFriendRequests.containsKey(applicant) && pendingFriendRequests.get(applicant).equals(receiver) ||
                 (pendingFriendRequests.containsValue(applicant) && pendingFriendRequests.containsKey(receiver) &&
-                pendingFriendRequests.get(receiver).equals(applicant))) {
+                        pendingFriendRequests.get(receiver).equals(applicant))) {
             throw new AlreadyExistsError("solicitacao ja existe.");
         }
         if (applicant.getFriends().contains(receiver)){
@@ -359,5 +363,3 @@ public class SocialNetwork {
         return interactionsFromPost.anyMatch( i -> i.getAuthor().equals(interaction.getAuthor()));
     }
 }
-
-

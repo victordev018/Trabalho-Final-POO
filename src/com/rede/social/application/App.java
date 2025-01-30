@@ -103,6 +103,7 @@ public class App {
         if (chosen == 0) {
             try {
                 socialNetwork.saveProfiles();
+                socialNetwork.savePosts();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -519,7 +520,7 @@ public class App {
         InteractionType interactionType = this.getInteractionType();
         Interaction interaction = socialNetwork.createInteraction(interactionType, owner);
 
-        // tentando criar e adiconar interação
+        // tentando criar e adicionar interação
         try {
             socialNetwork.addInteraction(idPost, interaction);
             ioUtil.showMessage("-> interação adiconada com sucesso✅!");
