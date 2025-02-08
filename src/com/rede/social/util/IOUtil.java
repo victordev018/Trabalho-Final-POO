@@ -1,5 +1,7 @@
 package com.rede.social.util;
 
+import com.rede.social.exception.global.InvalidInputError;
+
 import java.util.Scanner;
 
 public class IOUtil {
@@ -8,56 +10,58 @@ public class IOUtil {
 
     public IOUtil() {}
 
-    public String getText(String message) {
-        System.out.print(message);
-        String result = in.next().trim();
-
-        while (result.isEmpty() || result.matches("\\d+")){
-            System.out.println("Você não escreveu algo válido. Por favor, escreva de novo.");
-            result = in.next().trim();
+    public static String getText(String msg) {
+        try {
+            System.out.print(msg + " ");
+            String input = in.nextLine().trim();
+            if (input.matches(".*\\d.*")) {
+                throw new InvalidInputError("Entrada inválida: apenas texto é permitido.");
+            }
+            return input;
+        } catch (InvalidInputError e) {
+            System.out.println(e.getMessage());
+            return getText(msg);
         }
-
-        return result;
     }
 
-    public int getInt(String message) {
-        System.out.print(message);
-        while (!in.hasNextInt()){
-            System.out.println("Sua entrada é inválida. Por favor,digite de novo");
-            in.next();
-            System.out.println(message);
+    public static Integer getInt(String msg) {
+        try {
+            System.out.print(msg + " ");
+            return Integer.parseInt(in.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Digite um número inteiro válido.");
+            return getInt(msg);
         }
-        int number = in.nextInt();
-        in.nextLine();
-        return number;
     }
 
-    public int getIntSpecific(String message, int min, int max){
-        int number = getInt(message);
-
-        while (number < min || number > max) {
-            System.out.println("Você deve fazer escolhas dentro dos limites");
-            number = getInt(message);
+    public static Integer getIntSpecific(String msg, int min, int max) {
+        try {
+            int number = getInt(msg);
+            if (number < min || number > max) {
+                throw new InvalidInputError("O número deve estar entre " + min + " e " + max + ".");
+            }
+            return number;
+        } catch (InvalidInputError e) {
+            System.out.println(e.getMessage());
+            return getIntSpecific(msg, min, max);
         }
-
-        return number;
     }
 
-    public void showError(String error) {
+    public static void showError(String error) {
         System.out.println(error);
     }
 
-    public void showMessage(String message) {
+    public static void showMessage(String message) {
         System.out.println(message);
     }
 
-    public void clearScreen() {
+    public static void clearScreen() {
         System.out.print("Pressione <Enter> para continuar...");
-        in.next();
+        in.nextLine();
         showMessage("\n".repeat(20));
     }
 
-    public void closeScanner() {
+    public static void closeScanner() {
         in.close();
     }
 }
