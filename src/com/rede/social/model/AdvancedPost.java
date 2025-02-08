@@ -12,6 +12,11 @@ public class AdvancedPost extends Post {
         this.interactions = new ArrayList<>();
     }
 
+    public AdvancedPost() {
+        super();
+        interactions = new ArrayList<>();
+    }
+
     public void addInteraction(Interaction newInteraction) {
         this.interactions.add(newInteraction);
     }

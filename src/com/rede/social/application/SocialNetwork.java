@@ -37,7 +37,7 @@ public class SocialNetwork {
         JsonFileHandler.saveProfilesToFile(profileRepository.getAllProfiles(), "profiles.json");
     }
 
-    public void savePosts() throws IOException {
+    public void savePosts() throws IOException, DBException {
         JsonFileHandler.savePostsToFile(postRepository.listPosts(), "posts.json");
     }
 
@@ -48,7 +48,7 @@ public class SocialNetwork {
      * @return uma nova instância de Post, com o id gerado baseado na quantidade de posts existentes
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public Post createPost(String content, Profile owner) {
+    public Post createPost(String content, Profile owner) throws DBException {
         List<Post> posts = postRepository.listPosts();
         Post post;
         if (posts.isEmpty()) {
@@ -69,7 +69,7 @@ public class SocialNetwork {
      * @return uma nova instância de AdvancedPost, com o id gerado baseado na quantidade de posts existentes
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public AdvancedPost createAdvancedPost(String content, Profile owner) {
+    public AdvancedPost createAdvancedPost(String content, Profile owner) throws DBException {
         List<Post> posts = postRepository.listPosts();
         if (posts.isEmpty()) {
             return new AdvancedPost(1, content, "PA", owner);
@@ -83,7 +83,7 @@ public class SocialNetwork {
      * @param post uma instância de Post a ser adicionada no repositório
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public void addPost(Post post) {
+    public void addPost(Post post) throws DBException {
         this.postRepository.addPost(post);
     }
 
@@ -92,7 +92,7 @@ public class SocialNetwork {
      * @return retorna uma lista com todos os posts cadastrados
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public List<Post> listPosts() {
+    public List<Post> listPosts() throws DBException {
         return this.postRepository.listPosts();
     }
 
@@ -316,7 +316,7 @@ public class SocialNetwork {
      * @throws InteractionDuplicatedError no caso de uma inserção duplicada de uma mesma interação de um mesmo perfil
      * @throws NotFoundError no caso do post procurado não ser encontrado
      */
-    public void addInteraction(Integer idPost, Interaction interaction) throws PostUnauthorizedError, InteractionDuplicatedError, NotFoundError {
+    public void addInteraction(Integer idPost, Interaction interaction) throws PostUnauthorizedError, InteractionDuplicatedError, NotFoundError, DBException {
         Post post = this.postRepository.findPostById(idPost).get();
         if (!(post instanceof AdvancedPost)){
             throw new PostUnauthorizedError("somente posts avancados podem realizar interacoes.");
@@ -339,16 +339,24 @@ public class SocialNetwork {
 
     // TODO: documentar método
     public boolean existsPost() {
-        return !postRepository.listPosts().isEmpty();
+        try {
+            return !postRepository.listPosts().isEmpty();
+        } catch (DBException e) {
+        }
+        return false;
     }
 
     // TODO: documentar método
     public boolean existsAdvancedPost() {
-        List<AdvancedPost> listAdvancedPosts = getAdvancedPosts();
+        List<AdvancedPost> listAdvancedPosts = null;
+        try {
+            listAdvancedPosts = getAdvancedPosts();
+        } catch (DBException e) {
+        }
         return !listAdvancedPosts.isEmpty();
     }
 
-    public List<AdvancedPost> getAdvancedPosts() {
+    public List<AdvancedPost> getAdvancedPosts() throws DBException {
         List<AdvancedPost> advancedPosts = new ArrayList<>();
         for (Post p : listPosts()) {
             if (p instanceof AdvancedPost) {

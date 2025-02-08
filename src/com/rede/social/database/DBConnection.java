@@ -14,7 +14,7 @@ public class DBConnection {
             conn = DriverManager.getConnection(url);
             return conn;
         } catch (SQLException e) {
-            throw new DBException("Falha ao tentar se conecetar com o banco de dados");
+            throw new DBException("Falha ao tentar se conecetar com o banco de dados" + e.getMessage());
         }
     }
 

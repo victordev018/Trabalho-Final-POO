@@ -289,7 +289,12 @@ public class App {
      * Verifica se existem posts e exibe-os, caso haja post cadastrados.
      */
     public void listAllPosts() {
-        List<Post> posts = socialNetwork.listPosts();
+        List<Post> posts = null;
+        try {
+            posts = socialNetwork.listPosts();
+        } catch (DBException e) {
+            ioUtil.showError(e.getMessage());
+        }
         if (posts.isEmpty()) {
             ioUtil.showMessage("!Nao ha posts cadastrados!");
             return;
@@ -500,34 +505,31 @@ public class App {
     public void addInteraction() {
         if (!socialNetwork.existsAdvancedPost()) {
             ioUtil.showError("!Nao existe posts avançados para poder interagir!");
+            return;
         }
 
         // informações do perfil de quem deseja fazer a interação
         ioUtil.showMessage("-> informacao do perfil que deseja interagir com post <-");
         String username = ioUtil.getText("> username: ");
         Profile owner;
+
         try {
             owner = socialNetwork.findProfileByUsername(username);
-        } catch (NotFoundError | DBException e) {
-            ioUtil.showError(e.getMessage());
-            return;
-        }
 
-        // exibir posts avançados que podem receber interações
-        List<AdvancedPost> advancedPostList = socialNetwork.getAdvancedPosts();
-        ioUtil.showMessage("-> lista de posts avançados <-");
-        advancedPostList.forEach(this::showPost);
+            // exibir posts avançados que podem receber interações
+            List<AdvancedPost> advancedPostList = socialNetwork.getAdvancedPosts();
+            ioUtil.showMessage("-> lista de posts avançados <-");
+            advancedPostList.forEach(this::showPost);
 
-        ioUtil.showMessage("-> informaçao do post que deseja interagir <-");
-        int idPost = ioUtil.getInt("> id do post: ");
-        InteractionType interactionType = this.getInteractionType();
-        Interaction interaction = socialNetwork.createInteraction(interactionType, owner);
+            ioUtil.showMessage("-> informaçao do post que deseja interagir <-");
+            int idPost = ioUtil.getInt("> id do post: ");
+            InteractionType interactionType = this.getInteractionType();
+            Interaction interaction = socialNetwork.createInteraction(interactionType, owner);
 
-        // tentando criar e adicionar interação
-        try {
+            // tentando criar e adicionar interação
             socialNetwork.addInteraction(idPost, interaction);
             ioUtil.showMessage("-> interação adicionada com sucesso✅!");
-        } catch (PostUnauthorizedError | InteractionDuplicatedError | NotFoundError e) {
+        } catch (PostUnauthorizedError | InteractionDuplicatedError | NotFoundError | DBException e) {
             ioUtil.showError(e.getMessage());
         }
     }

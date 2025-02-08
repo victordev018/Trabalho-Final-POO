@@ -36,6 +36,8 @@ public class Post {
         this.owner = owner;
     }
 
+    public Post(){}
+
     public int getId() {
         return id;
     }
