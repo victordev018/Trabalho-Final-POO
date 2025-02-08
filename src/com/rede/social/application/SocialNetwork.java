@@ -1,5 +1,6 @@
 package com.rede.social.application;
 
+import com.rede.social.exception.database.DBException;
 import com.rede.social.exception.global.AlreadyExistsError;
 import com.rede.social.exception.global.NotFoundError;
 import com.rede.social.exception.interactionException.InteractionDuplicatedError;
@@ -32,7 +33,7 @@ public class SocialNetwork {
         this.interactions = new ArrayList<>();
     }
 
-    public void saveProfiles() throws IOException {
+    public void saveProfiles() throws IOException, DBException {
         JsonFileHandler.saveProfilesToFile(profileRepository.getAllProfiles(), "profiles.json");
     }
 
@@ -102,7 +103,7 @@ public class SocialNetwork {
      * @throws NotFoundError no caso do perfil não ser encontrado
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public List<Post> listPostsByProfile(String usernameOwner) throws NotFoundError {
+    public List<Post> listPostsByProfile(String usernameOwner) throws NotFoundError, DBException {
         return this.postRepository.listPostsByProfile(usernameOwner);
     }
 
@@ -114,7 +115,7 @@ public class SocialNetwork {
      * @return uma instância de perfil, com o id gerado baseado na quantidade de perfis existentes
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public Profile createProfile(String username, String photo, String email) {
+    public Profile createProfile(String username, String photo, String email) throws DBException {
         List<Profile> profiles = profileRepository.getAllProfiles();
         if (profiles.isEmpty()) {
             return new Profile(1, username, photo, email, "PN");
@@ -131,7 +132,7 @@ public class SocialNetwork {
      * @return uma instância de perfil avançado, com o id gerado baseado na quantidade de perfis existentes
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public AdvancedProfile createAdvancedProfile(String username, String photo, String email) {
+    public AdvancedProfile createAdvancedProfile(String username, String photo, String email) throws DBException {
         List<Profile> profiles = profileRepository.getAllProfiles();
         if (profiles.isEmpty()) {
             return new AdvancedProfile(1, username, photo, email, "PA");
@@ -146,7 +147,7 @@ public class SocialNetwork {
      * @throws AlreadyExistsError se o perfil já existe no repositório de perfis
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public void addProfile(Profile profile) throws AlreadyExistsError {
+    public void addProfile(Profile profile) throws AlreadyExistsError, DBException {
         profileRepository.addProfile(profile);
     }
 
@@ -156,7 +157,7 @@ public class SocialNetwork {
      * @throws NotFoundError se o perfil não for encontrado
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public Profile findProfileById(Integer id) throws NotFoundError {
+    public Profile findProfileById(Integer id) throws NotFoundError, DBException {
         Optional<Profile> founded = profileRepository.findProfileById(id);
         return founded.get();
     }
@@ -167,7 +168,7 @@ public class SocialNetwork {
      * @throws NotFoundError se o perfil não for encontrado
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public Profile findProfileByEmail(String email) throws NotFoundError {
+    public Profile findProfileByEmail(String email) throws NotFoundError, DBException {
         Optional<Profile> founded = profileRepository.findProfileByEmail(email);
         return founded.get();
     }
@@ -178,13 +179,13 @@ public class SocialNetwork {
      * @throws NotFoundError se o perfil não for encontrado
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public Profile findProfileByUsername(String username) throws NotFoundError {
+    public Profile findProfileByUsername(String username) throws NotFoundError, DBException {
         Optional<Profile> founded = profileRepository.findProfileByUsername(username);
         return founded.get();
     }
 
     // TODO: documentar este método
-    public List<Profile> listProfile() {
+    public List<Profile> listProfile() throws DBException {
         return this.profileRepository.getAllProfiles();
     }
 
@@ -196,7 +197,7 @@ public class SocialNetwork {
      * @throws ProfileAlreadyActivatedError se o perfil encontrado já estiver ativo
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public void activateProfile(String username) throws NotFoundError, ProfileUnauthorizedError, ProfileAlreadyActivatedError {
+    public void activateProfile(String username) throws NotFoundError, ProfileUnauthorizedError, ProfileAlreadyActivatedError, DBException {
         Optional<Profile> optionalProfile = profileRepository.findProfileByUsername(username);
         Profile profile = optionalProfile.get();
         if (!(profile instanceof AdvancedProfile)) {
@@ -215,7 +216,7 @@ public class SocialNetwork {
      * @throws ProfileAlreadyDeactivatedError se o perfil encontrado já estiver inativo
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    public void unactivateProfile(String username) throws NotFoundError, ProfileUnauthorizedError, ProfileAlreadyDeactivatedError {
+    public void unactivateProfile(String username) throws NotFoundError, ProfileUnauthorizedError, ProfileAlreadyDeactivatedError, DBException {
         Optional<Profile> optionalProfile = profileRepository.findProfileByUsername(username);
         Profile profile = optionalProfile.get();
         if (!(profile instanceof AdvancedProfile)) {
@@ -224,6 +225,7 @@ public class SocialNetwork {
         AdvancedProfile advancedProfile = (AdvancedProfile) profile;
         if (!advancedProfile.getStatus()) throw new ProfileAlreadyDeactivatedError("O perfil do " + username + " ja esta inativo.");
         advancedProfile.setStatus(false);
+        // TODO: chamar banco para atualizar lá o status
     }
 
     /**
@@ -234,7 +236,7 @@ public class SocialNetwork {
      * @throws AlreadyExistsError caso a solicitação ja existe nas solicitações pendentes
      * @throws FriendshipAlreadyExistsError caso os perfis já tenham amizade
      */
-    public void sendRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, AlreadyExistsError, FriendshipAlreadyExistsError {
+    public void sendRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, AlreadyExistsError, FriendshipAlreadyExistsError, DBException {
         Profile applicant = this.profileRepository.findProfileByUsername(usernameApplicant).get();
         Profile receiver = this.profileRepository.findProfileByUsername(usernameReceiver).get();
         if (pendingFriendRequests.containsKey(applicant) && pendingFriendRequests.get(applicant).equals(receiver) ||
@@ -255,7 +257,7 @@ public class SocialNetwork {
      * @throws NotFoundError caso um dos perfis informados não seja encontrado
      * @throws RequestNotFoundError caso a solicitação que relacionado aos dois perfis não exista
      */
-    public void acceptRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, RequestNotFoundError {
+    public void acceptRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, RequestNotFoundError, DBException {
         Profile applicant = this.profileRepository.findProfileByUsername(usernameApplicant).get();
         Profile receiver = this.profileRepository.findProfileByUsername(usernameReceiver).get();
         if (!pendingFriendRequests.containsKey(applicant) || !pendingFriendRequests.get(applicant).equals(receiver)) {
@@ -273,7 +275,7 @@ public class SocialNetwork {
      * @throws NotFoundError caso um dos perfis informados não seja encontrado
      * @throws RequestNotFoundError caso a solicitação que relacionado aos dois perfis não exista
      */
-    public void refuseRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, RequestNotFoundError {
+    public void refuseRequest(String usernameApplicant, String usernameReceiver) throws NotFoundError, RequestNotFoundError, DBException {
         Profile applicant = this.profileRepository.findProfileByUsername(usernameApplicant).get();
         Profile receiver = this.profileRepository.findProfileByUsername(usernameReceiver).get();
         if (!pendingFriendRequests.containsKey(applicant) || !pendingFriendRequests.get(applicant).equals(receiver)){
@@ -328,7 +330,11 @@ public class SocialNetwork {
 
     // TODO: fazer documentação dos métodos abaixo
     public boolean existsProfile() {
-        return !profileRepository.getAllProfiles().isEmpty();
+        try {
+            return !profileRepository.getAllProfiles().isEmpty();
+        } catch (DBException e) {
+        }
+        return false;
     }
 
     // TODO: documentar método

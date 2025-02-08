@@ -1,4 +1,5 @@
 package com.rede.social.application;
+import com.rede.social.exception.database.DBException;
 import com.rede.social.exception.global.AlreadyExistsError;
 import com.rede.social.exception.global.NotFoundError;
 import com.rede.social.exception.interactionException.InteractionDuplicatedError;
@@ -102,7 +103,7 @@ public class App {
             try {
                 socialNetwork.saveProfiles();
                 socialNetwork.savePosts();
-            } catch (IOException e) {
+            } catch (IOException | DBException e) {
                 throw new RuntimeException(e);
             }
             viewStack.pop();
@@ -143,12 +144,15 @@ public class App {
         int chosenPhoto = ioUtil.getIntSpecific("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ",1,2);
         String photo = chosenPhoto == 1? "\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0" : "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0";
         int typeProfile = ioUtil.getIntSpecific("> tipo de perfil: (1-normal, 2-avançado): ", 1, 2);
+
+        try {
         Profile newProfile = typeProfile == 1? socialNetwork.createProfile(username, photo, email) :
                 socialNetwork.createAdvancedProfile(username, photo, email);
-        try {
-            socialNetwork.addProfile(newProfile);
-        } catch (AlreadyExistsError e) {
-            ioUtil.showError("!Ja existe perfil com este nome ou email!");
+
+        socialNetwork.addProfile(newProfile);
+        } catch (AlreadyExistsError | DBException e) {
+            ioUtil.showError(e.getMessage());
+            return;
         }
 
         ioUtil.showMessage("-> perfil criado com sucesso!");
@@ -166,13 +170,13 @@ public class App {
         try {
             profile = socialNetwork.findProfileByUsername(searchTerm);
             ioUtil.showMessage("-> usuario encontrado: \n" + profile.toString());
-        } catch (NotFoundError e) {
+        } catch (NotFoundError | DBException e) {
             // tentando encontrar pelo email
             try {
                 profile = socialNetwork.findProfileByEmail(searchTerm);
                 ioUtil.showMessage("-> usuario encontrado: \n" + profile.toString());
-            } catch (NotFoundError ex) {
-                ioUtil.showError("!Nao foi encontrado o usuario com esta informacao: " + searchTerm);
+            } catch (NotFoundError | DBException ex) {
+                ioUtil.showError(ex.getMessage());
             }
         }
     }
@@ -183,7 +187,12 @@ public class App {
      * Caso exista, exibe a lista de perfis presentes.
      */
     public void listAllProfile() {
-        List<Profile> profiles = socialNetwork.listProfile();
+        List<Profile> profiles = null;
+        try {
+            profiles = socialNetwork.listProfile();
+        } catch (DBException e) {
+            ioUtil.showError(e.getMessage());
+        }
         if (profiles.isEmpty()) {
             ioUtil.showError("!Nao existe perfis cadastrados!");
             return;
@@ -200,26 +209,19 @@ public class App {
      */
     public void enableProfile() {
 
-        // verificando se existe perfis salvos
-        if (socialNetwork.listProfile().isEmpty()) {
-            ioUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
-            return;
-        }
-        listAllProfile();       // exibe lista de perfis
-        String username = ioUtil.getText("> informe o username do perfil a ser ativado: ");
         try {
+            // verificando se existe perfis salvos
+            if (socialNetwork.listProfile().isEmpty()) {
+                ioUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
+                return;
+            }
+            listAllProfile();       // exibe lista de perfis
+            String username = ioUtil.getText("> informe o username do perfil a ser ativado: ");
             socialNetwork.activateProfile(username);
-        } catch (NotFoundError e) {
-            ioUtil.showError("!Nao foi encontrado perfil com username: " + username);
-            return;
-        } catch (ProfileUnauthorizedError e) {
-            ioUtil.showError("O perfil nao e do tipo avancado, por isso nao sera ativado!");
-            return;
-        } catch (ProfileAlreadyActivatedError e) {
-            ioUtil.showError("O perfil ja esta ativo!");
+        } catch (NotFoundError | ProfileUnauthorizedError | ProfileAlreadyActivatedError | DBException e) {
+            ioUtil.showError(e.getMessage());
             return;
         }
-
         ioUtil.showMessage("-> perfil ativo com sucesso <-");
     }
 
@@ -231,26 +233,20 @@ public class App {
      */
     public void disableProfile() {
 
-        // verificando se existe perfis salvos
-        if (socialNetwork.listProfile().isEmpty()) {
-            ioUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
-            return;
-        }
-        listAllProfile();       // exibe lista de perfis
-        String username = ioUtil.getText("> informe o username do perfil a ser desativado: ");
         try {
+            // verificando se existe perfis salvos
+            if (socialNetwork.listProfile().isEmpty()) {
+                ioUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
+                return;
+            }
+            listAllProfile();       // exibe lista de perfis
+            String username = ioUtil.getText("> informe o username do perfil a ser desativado: ");
+
             socialNetwork.unactivateProfile(username);
-        } catch (NotFoundError e) {
-            ioUtil.showError("!Nao foi encontrado perfil com username: " + username);
-            return;
-        } catch (ProfileUnauthorizedError e) {
-            ioUtil.showError("O perfil nao e do tipo avancado, por isso nao sera desativado!");
-            return;
-        } catch (ProfileAlreadyDeactivatedError e) {
-            ioUtil.showError("!O perfil ja esta desativado!");
+        } catch (NotFoundError | ProfileUnauthorizedError | ProfileAlreadyDeactivatedError | DBException e) {
+            ioUtil.showError(e.getMessage());
             return;
         }
-
         ioUtil.showMessage("-> perfil desativado com sucesso <-");
     }
 
@@ -274,7 +270,7 @@ public class App {
             socialNetwork.addPost(newPost);
             ioUtil.showMessage("-> novo post adicionado com sucesso ao perfil de " + foundByUsername.getUsername());
 
-        } catch (NotFoundError e) {
+        } catch (NotFoundError | DBException e) {
             ioUtil.showError(e.getMessage());
         }
     }
@@ -313,7 +309,7 @@ public class App {
             ioUtil.showMessage("-> posts de " + username + ":");
             postsFromProfile.forEach(this::showPost);
 
-        } catch (NotFoundError e) {
+        } catch (NotFoundError | DBException e) {
             ioUtil.showError(e.getMessage());
         }
     }
@@ -404,7 +400,7 @@ public class App {
         try {
             socialNetwork.sendRequest(applicantUsername, receiverUsername);
             ioUtil.showMessage("-> solicitação enviada de " + applicantUsername + " para " + receiverUsername);
-        } catch (NotFoundError | AlreadyExistsError | FriendshipAlreadyExistsError e) {
+        } catch (NotFoundError | AlreadyExistsError | FriendshipAlreadyExistsError | DBException e) {
             ioUtil.showError(e.getMessage());
         }
     }
@@ -431,7 +427,7 @@ public class App {
         try {
             socialNetwork.acceptRequest(applicantUsername, receiverUsername);
             ioUtil.showMessage("-> solicitacao aceita, agora " + applicantUsername + " e " + receiverUsername + " sao amigos!");
-        } catch (NotFoundError | RequestNotFoundError e) {
+        } catch (NotFoundError | RequestNotFoundError | DBException e) {
             ioUtil.showError(e.getMessage());
         }
     }
@@ -458,7 +454,7 @@ public class App {
         try {
             socialNetwork.refuseRequest(applicantUsername, receiverUsername);
             ioUtil.showMessage("-> solicitacao recusada com sucesso!");
-        } catch (NotFoundError | RequestNotFoundError e) {
+        } catch (NotFoundError | RequestNotFoundError | DBException e) {
             ioUtil.showError(e.getMessage());
         }
     }
@@ -503,7 +499,7 @@ public class App {
         Profile owner;
         try {
             owner = socialNetwork.findProfileByUsername(username);
-        } catch (NotFoundError e) {
+        } catch (NotFoundError | DBException e) {
             ioUtil.showError(e.getMessage());
             return;
         }

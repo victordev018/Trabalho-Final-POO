@@ -1,5 +1,6 @@
 package com.rede.social.repository.impl;
 
+import com.rede.social.exception.database.DBException;
 import com.rede.social.exception.global.NotFoundError;
 import com.rede.social.model.AdvancedPost;
 import com.rede.social.model.Post;
@@ -69,7 +70,7 @@ public class PostRepositoryImplFile implements IPostRepository {
     }
 
     @Override
-    public List<Post> listPostsByProfile(String usernameOwner) throws NotFoundError {
+    public List<Post> listPostsByProfile(String usernameOwner) throws NotFoundError, DBException {
         Profile owner = this.profileRepository.findProfileByUsername(usernameOwner).get();
         return this.posts.stream()
                 .filter(post -> post.getOwner().equals(owner))

@@ -1,5 +1,6 @@
 package com.rede.social.repository;
 
+import com.rede.social.exception.database.DBException;
 import com.rede.social.model.Post;
 import com.rede.social.model.Profile;
 import com.rede.social.exception.global.NotFoundError;
@@ -36,5 +37,5 @@ public interface IPostRepository {
      * @throws NotFoundError no caso de nao encontrar o perfil do dono dos posts
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    List<Post> listPostsByProfile(String usernameOwner) throws NotFoundError;
+    List<Post> listPostsByProfile(String usernameOwner) throws NotFoundError, DBException;
 }
