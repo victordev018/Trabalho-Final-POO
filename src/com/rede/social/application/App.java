@@ -15,6 +15,7 @@ import com.rede.social.model.Post;
 import com.rede.social.model.Profile;
 import com.rede.social.model.enums.InteractionType;
 import com.rede.social.util.IOUtil;
+import com.rede.social.util.colorUtils;;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -25,7 +26,7 @@ public class App {
 
     Stack<Runnable> viewStack = new Stack<>();
     private SocialNetwork socialNetwork;
-    private IOUtil ioUtil;
+    private final IOUtil ioUtil;
 
     public App(SocialNetwork socialNetwork) {
         this.socialNetwork = socialNetwork;
@@ -79,11 +80,12 @@ public class App {
      * @param options é uma lista de objetos do tipo {@link Option} e mostra ao usuário as opções no menu
      * */
     public void showMenu(List<Option> options) {
+        colorUtils.titleColor();
         int numberOption = 0;
         for (Option o : options) {
-            System.out.printf("-> %-2d - %s%n", ++numberOption, o.title);
+            colorUtils.printColor("-> %-2d - %s%n", ++numberOption, o.title);
         }
-        System.out.printf("-> %-2d - Sair%n", 0);
+        colorUtils.printColor("-> %-2d - Sair%n", 0);
     }
 
     /**
@@ -93,9 +95,9 @@ public class App {
         List<Option> optionsToShow = options.stream()
                 .filter(op -> op.canShow.get()).toList();
         showMenu(optionsToShow);
-        int chosen = ioUtil.getInt("\n> opcao: ");
+        int chosen = IOUtil.getInt("\n> opcao: ");
         if (chosen > optionsToShow.size() || chosen < 0) {
-            ioUtil.showMessage("! Informe uma opcao válida !");
+            IOUtil.showMessage("! Informe uma opcao válida !");
             return;
         }
 
@@ -122,13 +124,20 @@ public class App {
     public void run() {
         viewStack.push(this::mainMenu);
 
-        // loop principal do programa
         while (!viewStack.isEmpty()) {
-            viewStack.peek().run();
-            ioUtil.clearScreen();
+            try{
+                viewStack.peek().run();
+                IOUtil.clearScreen();
+            } catch (NumberFormatException e) {
+                IOUtil.showMessage("Digite apenas números, por favor.");
+                IOUtil.clearScreen();
+            } catch (NoSuchElementException e){
+                IOUtil.showError("Ação cancelada pelo usuário.");
+                viewStack.pop();
+            }
         }
-
-        ioUtil.closeScanner();
+        System.out.println("Até a próxima ! >_<" + "\n".repeat(10));
+        IOUtil.closeScanner();
     }
 
     // métodos relacionados ao gerenciamento de perfis
@@ -139,9 +148,9 @@ public class App {
      * @throws AlreadyExistsError lançada em caso de já existir um perfil igual ao que está sendo criado.
      */
     public void createProfile() {
-        String username = ioUtil.getText("> Insira o seu nome de usuario: ");
-        String email = ioUtil.getText("> Insira o seu email: ");
-        int chosenPhoto = ioUtil.getIntSpecific("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ",1,2);
+        String username = IOUtil.getText("> Insira o seu nome de usuario: ");
+        String email = IOUtil.getText("> Insira o seu email: ");
+        int chosenPhoto = IOUtil.getIntSpecific("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ",1,2);
         String photo = chosenPhoto == 1? "\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0" : "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0";
         int typeProfile = ioUtil.getIntSpecific("> tipo de perfil: (1-normal, 2-avançado): ", 1, 2);
 
@@ -155,7 +164,7 @@ public class App {
             return;
         }
 
-        ioUtil.showMessage("-> perfil criado com sucesso!");
+        IOUtil.showMessage("-> perfil criado com sucesso!");
     }
 
     /**
@@ -163,8 +172,8 @@ public class App {
      * @throws NotFoundError  Em caso do usuário não ser achado.
      */
     public void findProfile() {
-        ioUtil.showMessage(" -> Voce pode fazer a busca por: username ou email <- ");
-        String searchTerm = ioUtil.getText("> Insira o username ou email: ");
+        IOUtil.showMessage(" -> Voce pode fazer a busca por: username ou email <- ");
+        String searchTerm = IOUtil.getText("> Insira o username ou email: ");
         Profile profile;
         // tentando encontrar pelo username
         try {
@@ -194,10 +203,10 @@ public class App {
             ioUtil.showError(e.getMessage());
         }
         if (profiles.isEmpty()) {
-            ioUtil.showError("!Nao existe perfis cadastrados!");
+            IOUtil.showError("!Nao existe perfis cadastrados!");
             return;
         }
-        ioUtil.showMessage("-> Lista de perfis:");
+        IOUtil.showMessage("-> Lista de perfis:");
         profiles.forEach(System.out::print);
     }
 
@@ -257,18 +266,18 @@ public class App {
      * @throws NotFoundError caso o perfil não seja encontrado.
      */
     public void createPost() {
-        ioUtil.showMessage("-> informações do perfil <-");
-        String username = ioUtil.getText("> insira o username: ");
+        IOUtil.showMessage("-> informações do perfil <-");
+        String username = IOUtil.getText("> insira o username: ");
 
         try {
             Profile foundByUsername = socialNetwork.findProfileByUsername(username);
-            String contentPost = ioUtil.getText("> conteudo do post: ");
-            int typePost = ioUtil.getInt("> tipo do post: (1-normal, 2-avançado): ");
+            String contentPost = IOUtil.getText("> conteudo do post: ");
+            int typePost = IOUtil.getIntSpecific("> tipo do post: (1-normal, 2-avançado): ", 1, 2);
             Post newPost = typePost == 1 ? socialNetwork.createPost(contentPost, foundByUsername):
                     socialNetwork.createAdvancedPost(contentPost, foundByUsername);
 
             socialNetwork.addPost(newPost);
-            ioUtil.showMessage("-> novo post adicionado com sucesso ao perfil de " + foundByUsername.getUsername());
+            IOUtil.showMessage("-> novo post adicionado com sucesso ao perfil de " + foundByUsername.getUsername());
 
         } catch (NotFoundError | DBException e) {
             ioUtil.showError(e.getMessage());
@@ -282,11 +291,11 @@ public class App {
     public void listAllPosts() {
         List<Post> posts = socialNetwork.listPosts();
         if (posts.isEmpty()) {
-            ioUtil.showMessage("!Nao ha posts cadastrados!");
+            IOUtil.showMessage("!Nao ha posts cadastrados!");
             return;
         }
 
-        ioUtil.showMessage("-> FEED com todos os posts <-");
+        IOUtil.showMessage("-> FEED com todos os posts <-");
         posts.forEach(this::showPost);
     }
 
@@ -296,17 +305,17 @@ public class App {
      * @throws NotFoundError caso o username do perfil não seja encontrado.
      */
     public void listPostByProfile() {
-        ioUtil.showMessage("-> informações do perfil <-");
-        String username = ioUtil.getText("> insira o username: ");
+        IOUtil.showMessage("-> informações do perfil <-");
+        String username = IOUtil.getText("> insira o username: ");
 
         try {
             Profile foundByUsername = socialNetwork.findProfileByUsername(username);
             List<Post> postsFromProfile = socialNetwork.listPostsByProfile(username);
             if (postsFromProfile.isEmpty()) {
-                ioUtil.showMessage("!O perfil de " + username + " não possui nenhum post!");
+                IOUtil.showMessage("!O perfil de " + username + " não possui nenhum post!");
                 return;
             }
-            ioUtil.showMessage("-> posts de " + username + ":");
+            IOUtil.showMessage("-> posts de " + username + ":");
             postsFromProfile.forEach(this::showPost);
 
         } catch (NotFoundError | DBException e) {
@@ -391,11 +400,11 @@ public class App {
      * @throws FriendshipAlreadyExistsError caso os usuários já sejam amigos.
      */
     public void sendRequest() {
-        ioUtil.showMessage("-> solicitar amizade <-");
-        ioUtil.showMessage(" -- informações do solicitante --");
-        String applicantUsername = ioUtil.getText("> username: ");
-        ioUtil.showMessage("-- informações do recebedor --");
-        String receiverUsername = ioUtil.getText("> username: ");
+        IOUtil.showMessage("-> solicitar amizade <-");
+        IOUtil.showMessage(" -- informações do solicitante --");
+        String applicantUsername = IOUtil.getText("> username: ");
+        IOUtil.showMessage("-- informações do recebedor --");
+        String receiverUsername = IOUtil.getText("> username: ");
 
         try {
             socialNetwork.sendRequest(applicantUsername, receiverUsername);
@@ -412,17 +421,17 @@ public class App {
      */
     public void acceptRequest() {
         if (!socialNetwork.existsPendingFriendRequest()) {
-            ioUtil.showMessage("!Não existe solicitações pendentes!");
+            IOUtil.showMessage("!Não existe solicitações pendentes!");
             return;
         }
 
         Map<Profile, Profile> pendingRequests = socialNetwork.getPendingFriendRequests();
-        ioUtil.showMessage("-> lista de solicitacoes <-");
+        IOUtil.showMessage("-> lista de solicitacoes <-");
         this.showFriendRequests(pendingRequests);
 
-        ioUtil.showMessage("-> informe solicitacao para ser aceita <-");
-        String applicantUsername = ioUtil.getText("> username solicitante: ");
-        String receiverUsername = ioUtil.getText("> username recebedor: ");
+        IOUtil.showMessage("-> informe solicitacao para ser aceita <-");
+        String applicantUsername = IOUtil.getText("> username solicitante: ");
+        String receiverUsername = IOUtil.getText("> username recebedor: ");
 
         try {
             socialNetwork.acceptRequest(applicantUsername, receiverUsername);
@@ -439,17 +448,17 @@ public class App {
      */
     public void refuseRequest() {
         if (!socialNetwork.existsPendingFriendRequest()) {
-            ioUtil.showMessage("!Não existe solicitações pendentes!");
+            IOUtil.showMessage("!Não existe solicitações pendentes!");
             return;
         }
 
         Map<Profile, Profile> pendingRequests = socialNetwork.getPendingFriendRequests();
-        ioUtil.showMessage("-> lista de solicitacoes <-");
+        IOUtil.showMessage("-> lista de solicitacoes <-");
         this.showFriendRequests(pendingRequests);
 
-        ioUtil.showMessage("-> informe solicitacao para ser recusada <-");
-        String applicantUsername = ioUtil.getText("> username solicitante: ");
-        String receiverUsername = ioUtil.getText("> username recebedor: ");
+        IOUtil.showMessage("-> informe solicitacao para ser recusada <-");
+        String applicantUsername = IOUtil.getText("> username solicitante: ");
+        String receiverUsername = IOUtil.getText("> username recebedor: ");
 
         try {
             socialNetwork.refuseRequest(applicantUsername, receiverUsername);
@@ -466,7 +475,7 @@ public class App {
     private void showFriendRequests(Map<Profile, Profile> pendingRequests) {
         Set<Profile> keys = pendingRequests.keySet();
         int idRequest = 0;
-        ioUtil.showMessage("      id        solicitante         recebedor");
+        IOUtil.showMessage("      id        solicitante         recebedor");
         for (Profile applicant : keys) {
             Profile receiver = pendingRequests.get(applicant);
             String profilesFormated = String.format("""
@@ -490,12 +499,12 @@ public class App {
      */
     public void addInteraction() {
         if (!socialNetwork.existsAdvancedPost()) {
-            ioUtil.showError("!Nao existe posts avançados para poder interagir!");
+            IOUtil.showError("!Nao existe posts avançados para poder interagir!");
         }
 
         // informações do perfil de quem deseja fazer a interação
-        ioUtil.showMessage("-> informacao do perfil que deseja interagir com post <-");
-        String username = ioUtil.getText("> username: ");
+        IOUtil.showMessage("-> informacao do perfil que deseja interagir com post <-");
+        String username = IOUtil.getText("> username: ");
         Profile owner;
         try {
             owner = socialNetwork.findProfileByUsername(username);
@@ -506,20 +515,20 @@ public class App {
 
         // exibir posts avançados que podem receber interações
         List<AdvancedPost> advancedPostList = socialNetwork.getAdvancedPosts();
-        ioUtil.showMessage("-> lista de posts avançados <-");
+        IOUtil.showMessage("-> lista de posts avançados <-");
         advancedPostList.forEach(this::showPost);
 
-        ioUtil.showMessage("-> informaçao do post que deseja interagir <-");
-        int idPost = ioUtil.getInt("> id do post: ");
+        IOUtil.showMessage("-> informaçao do post que deseja interagir <-");
+        int idPost = IOUtil.getInt("> id do post: ");
         InteractionType interactionType = this.getInteractionType();
         Interaction interaction = socialNetwork.createInteraction(interactionType, owner);
 
         // tentando criar e adicionar interação
         try {
             socialNetwork.addInteraction(idPost, interaction);
-            ioUtil.showMessage("-> interação adiconada com sucesso✅!");
+            IOUtil.showMessage("-> interação adicionada com sucesso✅!");
         } catch (PostUnauthorizedError | InteractionDuplicatedError | NotFoundError e) {
-            ioUtil.showError(e.getMessage());
+            IOUtil.showError(e.getMessage());
         }
     }
 
@@ -528,8 +537,8 @@ public class App {
      * @return o tipo de interação escolhido pelo usuário.
      */
     private InteractionType getInteractionType() {
-        ioUtil.showMessage("-> escolha um tipo de interacao:");
-        int chosen = ioUtil.getInt("> (1-👍 2-👎 3-😂 4-😲): ");
+        IOUtil.showMessage("-> escolha um tipo de interacao:");
+        int chosen = IOUtil.getIntSpecific("> (1-👍 2-👎 3-😂 4-😲): ", 1, 4);
         if (chosen == 1) return InteractionType.LIKE;
         if (chosen == 2) return InteractionType.DISLIKE;
         if (chosen == 3) return InteractionType.LAUGH;
