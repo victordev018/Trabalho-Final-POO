@@ -1,5 +1,7 @@
 package com.rede.social.util;
 
+import com.rede.social.exception.global.InvalidInputError;
+
 import java.util.Scanner;
 
 public class IOUtil {
@@ -8,43 +10,41 @@ public class IOUtil {
 
     public IOUtil() {}
 
-    public String getText(String message) {
-        System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
-        String result = in.next().trim();
-        System.out.print(colorUtils.RESET); // Resetando cor após entrada do usuário
-
-        while (result.isEmpty() || result.matches("\\d+")) {
-            System.out.println(colorUtils.RED + "Você não escreveu algo válido. Por favor, escreva de novo." + colorUtils.RESET);
+    public static String getText(String msg) {
+        try {
             System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
-            result = in.next().trim();
-            System.out.print(colorUtils.RESET);
+            String input = in.nextLine().trim();
+            if (input.matches(".*\\d.*")) {
+                throw new InvalidInputError("Entrada inválida: apenas texto é permitido.");
+            }
+            return input;
+        } catch (InvalidInputError e) {
+            System.out.println(e.getMessage());
+            return getText(msg);
         }
-
-        return result;
+    }
+  
+    public static Integer getInt(String msg) {
+        try {
+            System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
+            return Integer.parseInt(in.nextLine().trim());
+        } catch (NumberFormatException e) {
+            showError("Digite um número inteiro válido.");
+            return getInt(msg);
+        }
     }
 
-    public int getInt(String message) {
-        System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
-        while (!in.hasNextInt()) {
-            System.out.println(colorUtils.RED + "Sua entrada é inválida. Por favor, digite de novo." + colorUtils.RESET);
-            in.next();
-            System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
+    public static Integer getIntSpecific(String msg, int min, int max) {
+        try {
+            int number = getInt(msg);
+            if (number < min || number > max) {
+                throw new InvalidInputError("O número deve estar entre " + min + " e " + max + ".");
+            }
+            return number;
+        } catch (InvalidInputError e) {
+            showError(e.getMessage());
+            return getIntSpecific(msg, min, max);
         }
-        int number = in.nextInt();
-        in.nextLine();
-        System.out.print(colorUtils.RESET);
-        return number;
-    }
-
-    public int getIntSpecific(String message, int min, int max) {
-        int number = getInt(message);
-
-        while (number < min || number > max) {
-            System.out.println(colorUtils.RED + "Você deve fazer escolhas dentro dos limites." + colorUtils.RESET);
-            number = getInt(message);
-        }
-
-        return number;
     }
 
     public void showError(String error) {
@@ -65,7 +65,7 @@ public class IOUtil {
         showMessage("\n".repeat(20));
     }
 
-    public void closeScanner() {
+    public static void closeScanner() {
         in.close();
     }
 }
