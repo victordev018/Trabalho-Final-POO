@@ -159,7 +159,7 @@ public class SocialNetwork {
      */
     public Profile findProfileById(Integer id) throws NotFoundError, DBException {
         Optional<Profile> founded = profileRepository.findProfileById(id);
-        return founded.get();
+        return founded.orElseThrow(() -> new NotFoundError("!Nao foi encontrado perfil de id: " + id));
     }
 
     /**
@@ -170,7 +170,7 @@ public class SocialNetwork {
      */
     public Profile findProfileByEmail(String email) throws NotFoundError, DBException {
         Optional<Profile> founded = profileRepository.findProfileByEmail(email);
-        return founded.get();
+        return founded.orElseThrow(() -> new NotFoundError("!Nao foi encontrado perfil de email: " + email));
     }
 
     /**
@@ -181,7 +181,7 @@ public class SocialNetwork {
      */
     public Profile findProfileByUsername(String username) throws NotFoundError, DBException {
         Optional<Profile> founded = profileRepository.findProfileByUsername(username);
-        return founded.get();
+        return founded.orElseThrow(() -> new NotFoundError("!Nao foi encontrado perfil de username: " + username));
     }
 
     // TODO: documentar este método
@@ -346,14 +346,34 @@ public class SocialNetwork {
         return false;
     }
 
+    public boolean existsAdvancedProfiles() {
+        List<AdvancedProfile> listAdvancedProfile = null;
+        try {
+            listAdvancedProfile = getAdvancedProfiles();
+        } catch (DBException e) {
+        }
+        return !listAdvancedProfile.isEmpty();
+    }
+
+    public List<AdvancedProfile> getAdvancedProfiles() throws DBException {
+        List<AdvancedProfile> advancedProfileList = new ArrayList<>();
+        for (Profile p : listProfile()) {
+            if (p instanceof AdvancedProfile) {
+                advancedProfileList.add((AdvancedProfile) p);
+            }
+        }
+        return advancedProfileList;
+    }
+
     // TODO: documentar método
     public boolean existsAdvancedPost() {
         List<AdvancedPost> listAdvancedPosts = null;
         try {
             listAdvancedPosts = getAdvancedPosts();
+            return !listAdvancedPosts.isEmpty();
         } catch (DBException e) {
+            return false;
         }
-        return !listAdvancedPosts.isEmpty();
     }
 
     public List<AdvancedPost> getAdvancedPosts() throws DBException {
@@ -375,5 +395,13 @@ public class SocialNetwork {
     private boolean interactionAlreadyExists(AdvancedPost advancedPost, Interaction interaction) {
         Stream<Interaction> interactionsFromPost = advancedPost.listInteractions().stream();
         return interactionsFromPost.anyMatch( i -> i.getAuthor().equals(interaction.getAuthor()));
+    }
+
+    public int getQuantityProfiles() {
+        try {
+            return listProfile().size();
+        } catch (DBException e) {
+            return 0;
+        }
     }
 }

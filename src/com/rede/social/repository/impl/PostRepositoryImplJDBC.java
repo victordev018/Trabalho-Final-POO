@@ -34,7 +34,7 @@ public class PostRepositoryImplJDBC implements IPostRepository {
         try {
             ps = conn.prepareStatement(
               "INSERT INTO POST " +
-                   "(?, ?, ?, ?, ?)"
+                   "VALUES (?, ?, ?, ?, ?)"
             );
 
             ps.setInt(1, post.getId());
@@ -60,8 +60,8 @@ public class PostRepositoryImplJDBC implements IPostRepository {
 
         try {
             ps = conn.prepareStatement(
-                    "SELECT * FROM POST" +
-                         "WHERE ID = ?"
+                    "SELECT * FROM POST " +
+                         "WHERE ID=?"
             );
 
             ps.setInt(1, id);
@@ -113,7 +113,7 @@ public class PostRepositoryImplJDBC implements IPostRepository {
             int idOwner = this.profileRepository.findProfileByUsername(usernameOwner).get().getId();
             ps = conn.prepareStatement(
                     "SELECT * FROM POST " +
-                         "WHERE IDOWNER = ?"
+                         "WHERE OWNERID = ?"
             );
             ps.setInt(1, idOwner);
 
@@ -140,7 +140,7 @@ public class PostRepositoryImplJDBC implements IPostRepository {
         p.setId(rs.getInt("id"));
         p.setContent(rs.getString("content"));
         p.setType(rs.getString("type"));
-        p.setCreatedAt(LocalDateTime.parse(rs.getString("createdat")));
+        p.setCreatedAt(rs.getTimestamp("createdat").toLocalDateTime());
         p.setOwner(owner);
         return p;
     }

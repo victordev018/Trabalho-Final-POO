@@ -64,12 +64,12 @@ public class App {
             new Option("adicionar perfil", this::createProfile, () -> true),
             new Option("buscar perfil", this::findProfile, () -> socialNetwork.existsProfile()),
             new Option("listar perfis", this::listAllProfile, () -> socialNetwork.existsProfile()),
-            new Option("ativar perfil", this::enableProfile, () -> socialNetwork.existsProfile()),
-            new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsProfile()),
+            new Option("ativar perfil", this::enableProfile, () -> socialNetwork.existsAdvancedProfiles()),
+            new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsAdvancedProfiles()),
             new Option("adicionar post", this::createPost, () -> socialNetwork.existsProfile()),
             new Option("listar todos os posts", this::listAllPosts, () -> socialNetwork.existsPost()),
             new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost()),
-            new Option("solicitar amizade", this::sendRequest, () -> socialNetwork.existsProfile()),
+            new Option("solicitar amizade", this::sendRequest, () -> socialNetwork.getQuantityProfiles() > 1),
             new Option("aceitar solicitacao", this::acceptRequest, () -> socialNetwork.existsPendingFriendRequest()),
             new Option("recusar solicitacao", this::refuseRequest, () -> socialNetwork.existsPendingFriendRequest()),
             new Option("adicionar interacao em post", this::addInteraction, () -> socialNetwork.existsAdvancedPost())
@@ -185,7 +185,7 @@ public class App {
                 profile = socialNetwork.findProfileByEmail(searchTerm);
                 ioUtil.showMessage("-> usuario encontrado: \n" + profile.toString());
             } catch (NotFoundError | DBException ex) {
-                ioUtil.showError(ex.getMessage());
+                ioUtil.showError("!Nao foi encontrado perfil: " + searchTerm);
             }
         }
     }
