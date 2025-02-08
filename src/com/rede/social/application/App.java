@@ -1,4 +1,5 @@
 package com.rede.social.application;
+import com.rede.social.exception.database.DBException;
 import com.rede.social.exception.global.AlreadyExistsError;
 import com.rede.social.exception.global.NotFoundError;
 import com.rede.social.exception.interactionException.InteractionDuplicatedError;
@@ -63,12 +64,12 @@ public class App {
             new Option("adicionar perfil", this::createProfile, () -> true),
             new Option("buscar perfil", this::findProfile, () -> socialNetwork.existsProfile()),
             new Option("listar perfis", this::listAllProfile, () -> socialNetwork.existsProfile()),
-            new Option("ativar perfil", this::enableProfile, () -> socialNetwork.existsProfile()),
-            new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsProfile()),
+            new Option("ativar perfil", this::enableProfile, () -> socialNetwork.existsAdvancedProfiles()),
+            new Option("desativar perfil", this::disableProfile, () -> socialNetwork.existsAdvancedProfiles()),
             new Option("adicionar post", this::createPost, () -> socialNetwork.existsProfile()),
             new Option("listar todos os posts", this::listAllPosts, () -> socialNetwork.existsPost()),
             new Option("listar todos os posts por perfil", this::listPostByProfile, () -> socialNetwork.existsPost()),
-            new Option("solicitar amizade", this::sendRequest, () -> socialNetwork.existsProfile()),
+            new Option("solicitar amizade", this::sendRequest, () -> socialNetwork.getQuantityProfiles() > 1),
             new Option("aceitar solicitacao", this::acceptRequest, () -> socialNetwork.existsPendingFriendRequest()),
             new Option("recusar solicitacao", this::refuseRequest, () -> socialNetwork.existsPendingFriendRequest()),
             new Option("adicionar interacao em post", this::addInteraction, () -> socialNetwork.existsAdvancedPost())
@@ -94,9 +95,9 @@ public class App {
         List<Option> optionsToShow = options.stream()
                 .filter(op -> op.canShow.get()).toList();
         showMenu(optionsToShow);
-        int chosen = IOUtil.getInt("\n> opcao: ");
+        int chosen = ioUtil.getInt("\n> opcao: ");
         if (chosen > optionsToShow.size() || chosen < 0) {
-            IOUtil.showMessage("! Informe uma opcao válida !");
+            ioUtil.showMessage("! Informe uma opcao válida !");
             return;
         }
 
@@ -104,7 +105,7 @@ public class App {
             try {
                 socialNetwork.saveProfiles();
                 socialNetwork.savePosts();
-            } catch (IOException e) {
+            } catch (IOException | DBException e) {
                 throw new RuntimeException(e);
             }
             viewStack.pop();
@@ -126,17 +127,17 @@ public class App {
         while (!viewStack.isEmpty()) {
             try{
                 viewStack.peek().run();
-                IOUtil.clearScreen();
+                ioUtil.clearScreen();
             } catch (NumberFormatException e) {
-                IOUtil.showMessage("Digite apenas números, por favor.");
-                IOUtil.clearScreen();
+                ioUtil.showMessage("Digite apenas números, por favor.");
+                ioUtil.clearScreen();
             } catch (NoSuchElementException e){
-                IOUtil.showError("Ação cancelada pelo usuário.");
+                ioUtil.showError("Ação cancelada pelo usuário.");
                 viewStack.pop();
             }
         }
-        System.out.println("Até a próxima ! >_<" + "\n".repeat(10));
-        IOUtil.closeScanner();
+        System.out.println("Até a próxima ! >_<");
+        ioUtil.closeScanner();
     }
 
     // métodos relacionados ao gerenciamento de perfis
@@ -147,20 +148,23 @@ public class App {
      * @throws AlreadyExistsError lançada em caso de já existir um perfil igual ao que está sendo criado.
      */
     public void createProfile() {
-        String username = IOUtil.getText("> Insira o seu nome de usuario: ");
-        String email = IOUtil.getText("> Insira o seu email: ");
-        int chosenPhoto = IOUtil.getIntSpecific("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ",1,2);
+        String username = ioUtil.getText("> Insira o seu nome de usuario: ");
+        String email = ioUtil.getText("> Insira o seu email: ");
+        int chosenPhoto = ioUtil.getIntSpecific("> escolha uma foto (1-\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0 2-\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0): ",1,2);
         String photo = chosenPhoto == 1? "\uD83D\uDC69\uD83C\uDFFB\u200D\uD83E\uDDB0" : "\uD83D\uDC68\uD83C\uDFFB\u200D\uD83E\uDDB0";
-        int typeProfile = IOUtil.getIntSpecific("> tipo de perfil: (1-normal, 2-avançado): ", 1, 2);
+        int typeProfile = ioUtil.getIntSpecific("> tipo de perfil: (1-normal, 2-avançado): ", 1, 2);
+
+        try {
         Profile newProfile = typeProfile == 1? socialNetwork.createProfile(username, photo, email) :
                 socialNetwork.createAdvancedProfile(username, photo, email);
-        try {
-            socialNetwork.addProfile(newProfile);
-        } catch (AlreadyExistsError e) {
-            IOUtil.showError("!Ja existe perfil com este nome ou email!");
+
+        socialNetwork.addProfile(newProfile);
+        } catch (AlreadyExistsError | DBException e) {
+            ioUtil.showError(e.getMessage());
+            return;
         }
 
-        IOUtil.showMessage("-> perfil criado com sucesso!");
+        ioUtil.showMessage("-> perfil criado com sucesso!");
     }
 
     /**
@@ -168,20 +172,20 @@ public class App {
      * @throws NotFoundError  Em caso do usuário não ser achado.
      */
     public void findProfile() {
-        IOUtil.showMessage(" -> Voce pode fazer a busca por: username ou email <- ");
-        String searchTerm = IOUtil.getText("> Insira o username ou email: ");
+        ioUtil.showMessage(" -> Voce pode fazer a busca por: username ou email <- ");
+        String searchTerm = ioUtil.getText("> Insira o username ou email: ");
         Profile profile;
         // tentando encontrar pelo username
         try {
             profile = socialNetwork.findProfileByUsername(searchTerm);
-            IOUtil.showMessage("-> usuario encontrado: \n" + profile.toString());
-        } catch (NotFoundError e) {
+            ioUtil.showMessage("-> usuario encontrado: \n" + profile.toString());
+        } catch (NotFoundError | DBException e) {
             // tentando encontrar pelo email
             try {
                 profile = socialNetwork.findProfileByEmail(searchTerm);
-                IOUtil.showMessage("-> usuario encontrado: \n" + profile.toString());
-            } catch (NotFoundError ex) {
-                IOUtil.showError("!Nao foi encontrado o usuario com esta informacao: " + searchTerm);
+                ioUtil.showMessage("-> usuario encontrado: \n" + profile.toString());
+            } catch (NotFoundError | DBException ex) {
+                ioUtil.showError("!Nao foi encontrado perfil: " + searchTerm);
             }
         }
     }
@@ -192,12 +196,17 @@ public class App {
      * Caso exista, exibe a lista de perfis presentes.
      */
     public void listAllProfile() {
-        List<Profile> profiles = socialNetwork.listProfile();
+        List<Profile> profiles = null;
+        try {
+            profiles = socialNetwork.listProfile();
+        } catch (DBException e) {
+            ioUtil.showError(e.getMessage());
+        }
         if (profiles.isEmpty()) {
-            IOUtil.showError("!Nao existe perfis cadastrados!");
+            ioUtil.showError("!Nao existe perfis cadastrados!");
             return;
         }
-        IOUtil.showMessage("-> Lista de perfis:");
+        ioUtil.showMessage("-> Lista de perfis:");
         profiles.forEach(System.out::print);
     }
 
@@ -209,27 +218,20 @@ public class App {
      */
     public void enableProfile() {
 
-        // verificando se existe perfis salvos
-        if (socialNetwork.listProfile().isEmpty()) {
-            IOUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
-            return;
-        }
-        listAllProfile();       // exibe lista de perfis
-        String username = IOUtil.getText("> informe o username do perfil a ser ativado: ");
         try {
+            // verificando se existe perfis salvos
+            if (socialNetwork.listProfile().isEmpty()) {
+                ioUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
+                return;
+            }
+            listAllProfile();       // exibe lista de perfis
+            String username = ioUtil.getText("> informe o username do perfil a ser ativado: ");
             socialNetwork.activateProfile(username);
-        } catch (NotFoundError e) {
-            IOUtil.showError("!Nao foi encontrado perfil com username: " + username);
-            return;
-        } catch (ProfileUnauthorizedError e) {
-            IOUtil.showError("O perfil nao e do tipo avancado, por isso nao sera ativado!");
-            return;
-        } catch (ProfileAlreadyActivatedError e) {
-            IOUtil.showError("O perfil ja esta ativo!");
+        } catch (NotFoundError | ProfileUnauthorizedError | ProfileAlreadyActivatedError | DBException e) {
+            ioUtil.showError(e.getMessage());
             return;
         }
-
-        IOUtil.showMessage("-> perfil ativo com sucesso <-");
+        ioUtil.showMessage("-> perfil ativo com sucesso <-");
     }
 
     /**
@@ -240,27 +242,21 @@ public class App {
      */
     public void disableProfile() {
 
-        // verificando se existe perfis salvos
-        if (socialNetwork.listProfile().isEmpty()) {
-            IOUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
-            return;
-        }
-        listAllProfile();       // exibe lista de perfis
-        String username = IOUtil.getText("> informe o username do perfil a ser desativado: ");
         try {
+            // verificando se existe perfis salvos
+            if (socialNetwork.listProfile().isEmpty()) {
+                ioUtil.showError("!Nao ha perfil cadastrado para poder ativar!");
+                return;
+            }
+            listAllProfile();       // exibe lista de perfis
+            String username = ioUtil.getText("> informe o username do perfil a ser desativado: ");
+
             socialNetwork.unactivateProfile(username);
-        } catch (NotFoundError e) {
-            IOUtil.showError("!Nao foi encontrado perfil com username: " + username);
-            return;
-        } catch (ProfileUnauthorizedError e) {
-            IOUtil.showError("O perfil nao e do tipo avancado, por isso nao sera desativado!");
-            return;
-        } catch (ProfileAlreadyDeactivatedError e) {
-            IOUtil.showError("!O perfil ja esta desativado!");
+        } catch (NotFoundError | ProfileUnauthorizedError | ProfileAlreadyDeactivatedError | DBException e) {
+            ioUtil.showError(e.getMessage());
             return;
         }
-
-        IOUtil.showMessage("-> perfil desativado com sucesso <-");
+        ioUtil.showMessage("-> perfil desativado com sucesso <-");
     }
 
     // métodos relacionado ao gerenciamento de publicações
@@ -270,21 +266,21 @@ public class App {
      * @throws NotFoundError caso o perfil não seja encontrado.
      */
     public void createPost() {
-        IOUtil.showMessage("-> informações do perfil <-");
-        String username = IOUtil.getText("> insira o username: ");
+        ioUtil.showMessage("-> informações do perfil <-");
+        String username = ioUtil.getText("> insira o username: ");
 
         try {
             Profile foundByUsername = socialNetwork.findProfileByUsername(username);
-            String contentPost = IOUtil.getText("> conteudo do post: ");
-            int typePost = IOUtil.getIntSpecific("> tipo do post: (1-normal, 2-avançado): ", 1, 2);
+            String contentPost = ioUtil.getText("> conteudo do post: ");
+            int typePost = ioUtil.getIntSpecific("> tipo do post: (1-normal, 2-avançado): ", 1, 2);
             Post newPost = typePost == 1 ? socialNetwork.createPost(contentPost, foundByUsername):
                     socialNetwork.createAdvancedPost(contentPost, foundByUsername);
 
             socialNetwork.addPost(newPost);
-            IOUtil.showMessage("-> novo post adicionado com sucesso ao perfil de " + foundByUsername.getUsername());
+            ioUtil.showMessage("-> novo post adicionado com sucesso ao perfil de " + foundByUsername.getUsername());
 
-        } catch (NotFoundError e) {
-            IOUtil.showError(e.getMessage());
+        } catch (NotFoundError | DBException e) {
+            ioUtil.showError(e.getMessage());
         }
     }
 
@@ -293,13 +289,18 @@ public class App {
      * Verifica se existem posts e exibe-os, caso haja post cadastrados.
      */
     public void listAllPosts() {
-        List<Post> posts = socialNetwork.listPosts();
+        List<Post> posts = null;
+        try {
+            posts = socialNetwork.listPosts();
+        } catch (DBException e) {
+            ioUtil.showError(e.getMessage());
+        }
         if (posts.isEmpty()) {
-            IOUtil.showMessage("!Nao ha posts cadastrados!");
+            ioUtil.showMessage("!Nao ha posts cadastrados!");
             return;
         }
 
-        IOUtil.showMessage("-> FEED com todos os posts <-");
+        ioUtil.showMessage("-> FEED com todos os posts <-");
         posts.forEach(this::showPost);
     }
 
@@ -309,21 +310,21 @@ public class App {
      * @throws NotFoundError caso o username do perfil não seja encontrado.
      */
     public void listPostByProfile() {
-        IOUtil.showMessage("-> informações do perfil <-");
-        String username = IOUtil.getText("> insira o username: ");
+        ioUtil.showMessage("-> informações do perfil <-");
+        String username = ioUtil.getText("> insira o username: ");
 
         try {
             Profile foundByUsername = socialNetwork.findProfileByUsername(username);
             List<Post> postsFromProfile = socialNetwork.listPostsByProfile(username);
             if (postsFromProfile.isEmpty()) {
-                IOUtil.showMessage("!O perfil de " + username + " não possui nenhum post!");
+                ioUtil.showMessage("!O perfil de " + username + " não possui nenhum post!");
                 return;
             }
-            IOUtil.showMessage("-> posts de " + username + ":");
+            ioUtil.showMessage("-> posts de " + username + ":");
             postsFromProfile.forEach(this::showPost);
 
-        } catch (NotFoundError e) {
-            IOUtil.showError(e.getMessage());
+        } catch (NotFoundError | DBException e) {
+            ioUtil.showError(e.getMessage());
         }
     }
 
@@ -404,17 +405,17 @@ public class App {
      * @throws FriendshipAlreadyExistsError caso os usuários já sejam amigos.
      */
     public void sendRequest() {
-        IOUtil.showMessage("-> solicitar amizade <-");
-        IOUtil.showMessage(" -- informações do solicitante --");
-        String applicantUsername = IOUtil.getText("> username: ");
-        IOUtil.showMessage("-- informações do recebedor --");
-        String receiverUsername = IOUtil.getText("> username: ");
+        ioUtil.showMessage("-> solicitar amizade <-");
+        ioUtil.showMessage(" -- informações do solicitante --");
+        String applicantUsername = ioUtil.getText("> username: ");
+        ioUtil.showMessage("-- informações do recebedor --");
+        String receiverUsername = ioUtil.getText("> username: ");
 
         try {
             socialNetwork.sendRequest(applicantUsername, receiverUsername);
-            IOUtil.showMessage("-> solicitação enviada de " + applicantUsername + " para " + receiverUsername);
-        } catch (NotFoundError | AlreadyExistsError | FriendshipAlreadyExistsError e) {
-            IOUtil.showError(e.getMessage());
+            ioUtil.showMessage("-> solicitação enviada de " + applicantUsername + " para " + receiverUsername);
+        } catch (NotFoundError | AlreadyExistsError | FriendshipAlreadyExistsError | DBException e) {
+            ioUtil.showError(e.getMessage());
         }
     }
 
@@ -425,23 +426,23 @@ public class App {
      */
     public void acceptRequest() {
         if (!socialNetwork.existsPendingFriendRequest()) {
-            IOUtil.showMessage("!Não existe solicitações pendentes!");
+            ioUtil.showMessage("!Não existe solicitações pendentes!");
             return;
         }
 
         Map<Profile, Profile> pendingRequests = socialNetwork.getPendingFriendRequests();
-        IOUtil.showMessage("-> lista de solicitacoes <-");
+        ioUtil.showMessage("-> lista de solicitacoes <-");
         this.showFriendRequests(pendingRequests);
 
-        IOUtil.showMessage("-> informe solicitacao para ser aceita <-");
-        String applicantUsername = IOUtil.getText("> username solicitante: ");
-        String receiverUsername = IOUtil.getText("> username recebedor: ");
+        ioUtil.showMessage("-> informe solicitacao para ser aceita <-");
+        String applicantUsername = ioUtil.getText("> username solicitante: ");
+        String receiverUsername = ioUtil.getText("> username recebedor: ");
 
         try {
             socialNetwork.acceptRequest(applicantUsername, receiverUsername);
-            IOUtil.showMessage("-> solicitacao aceita, agora " + applicantUsername + " e " + receiverUsername + " sao amigos!");
-        } catch (NotFoundError | RequestNotFoundError e) {
-            IOUtil.showError(e.getMessage());
+            ioUtil.showMessage("-> solicitacao aceita, agora " + applicantUsername + " e " + receiverUsername + " sao amigos!");
+        } catch (NotFoundError | RequestNotFoundError | DBException e) {
+            ioUtil.showError(e.getMessage());
         }
     }
 
@@ -452,23 +453,23 @@ public class App {
      */
     public void refuseRequest() {
         if (!socialNetwork.existsPendingFriendRequest()) {
-            IOUtil.showMessage("!Não existe solicitações pendentes!");
+            ioUtil.showMessage("!Não existe solicitações pendentes!");
             return;
         }
 
         Map<Profile, Profile> pendingRequests = socialNetwork.getPendingFriendRequests();
-        IOUtil.showMessage("-> lista de solicitacoes <-");
+        ioUtil.showMessage("-> lista de solicitacoes <-");
         this.showFriendRequests(pendingRequests);
 
-        IOUtil.showMessage("-> informe solicitacao para ser recusada <-");
-        String applicantUsername = IOUtil.getText("> username solicitante: ");
-        String receiverUsername = IOUtil.getText("> username recebedor: ");
+        ioUtil.showMessage("-> informe solicitacao para ser recusada <-");
+        String applicantUsername = ioUtil.getText("> username solicitante: ");
+        String receiverUsername = ioUtil.getText("> username recebedor: ");
 
         try {
             socialNetwork.refuseRequest(applicantUsername, receiverUsername);
-            IOUtil.showMessage("-> solicitacao recusada com sucesso!");
-        } catch (NotFoundError | RequestNotFoundError e) {
-            IOUtil.showError(e.getMessage());
+            ioUtil.showMessage("-> solicitacao recusada com sucesso!");
+        } catch (NotFoundError | RequestNotFoundError | DBException e) {
+            ioUtil.showError(e.getMessage());
         }
     }
 
@@ -479,7 +480,7 @@ public class App {
     private void showFriendRequests(Map<Profile, Profile> pendingRequests) {
         Set<Profile> keys = pendingRequests.keySet();
         int idRequest = 0;
-        IOUtil.showMessage("      id        solicitante         recebedor");
+        ioUtil.showMessage("      id        solicitante         recebedor");
         for (Profile applicant : keys) {
             Profile receiver = pendingRequests.get(applicant);
             String profilesFormated = String.format("""
@@ -503,36 +504,33 @@ public class App {
      */
     public void addInteraction() {
         if (!socialNetwork.existsAdvancedPost()) {
-            IOUtil.showError("!Nao existe posts avançados para poder interagir!");
-        }
-
-        // informações do perfil de quem deseja fazer a interação
-        IOUtil.showMessage("-> informacao do perfil que deseja interagir com post <-");
-        String username = IOUtil.getText("> username: ");
-        Profile owner;
-        try {
-            owner = socialNetwork.findProfileByUsername(username);
-        } catch (NotFoundError e) {
-            IOUtil.showError(e.getMessage());
+            ioUtil.showError("!Nao existe posts avançados para poder interagir!");
             return;
         }
 
-        // exibir posts avançados que podem receber interações
-        List<AdvancedPost> advancedPostList = socialNetwork.getAdvancedPosts();
-        IOUtil.showMessage("-> lista de posts avançados <-");
-        advancedPostList.forEach(this::showPost);
+        // informações do perfil de quem deseja fazer a interação
+        ioUtil.showMessage("-> informacao do perfil que deseja interagir com post <-");
+        String username = ioUtil.getText("> username: ");
+        Profile owner;
 
-        IOUtil.showMessage("-> informaçao do post que deseja interagir <-");
-        int idPost = IOUtil.getInt("> id do post: ");
-        InteractionType interactionType = this.getInteractionType();
-        Interaction interaction = socialNetwork.createInteraction(interactionType, owner);
-
-        // tentando criar e adicionar interação
         try {
+            owner = socialNetwork.findProfileByUsername(username);
+
+            // exibir posts avançados que podem receber interações
+            List<AdvancedPost> advancedPostList = socialNetwork.getAdvancedPosts();
+            ioUtil.showMessage("-> lista de posts avançados <-");
+            advancedPostList.forEach(this::showPost);
+
+            ioUtil.showMessage("-> informaçao do post que deseja interagir <-");
+            int idPost = ioUtil.getInt("> id do post: ");
+            InteractionType interactionType = this.getInteractionType();
+            Interaction interaction = socialNetwork.createInteraction(interactionType, owner);
+
+            // tentando criar e adicionar interação
             socialNetwork.addInteraction(idPost, interaction);
-            IOUtil.showMessage("-> interação adicionada com sucesso✅!");
-        } catch (PostUnauthorizedError | InteractionDuplicatedError | NotFoundError e) {
-            IOUtil.showError(e.getMessage());
+            ioUtil.showMessage("-> interação adicionada com sucesso✅!");
+        } catch (PostUnauthorizedError | InteractionDuplicatedError | NotFoundError | DBException e) {
+            ioUtil.showError(e.getMessage());
         }
     }
 
@@ -541,8 +539,8 @@ public class App {
      * @return o tipo de interação escolhido pelo usuário.
      */
     private InteractionType getInteractionType() {
-        IOUtil.showMessage("-> escolha um tipo de interacao:");
-        int chosen = IOUtil.getIntSpecific("> (1-👍 2-👎 3-😂 4-😲): ", 1, 4);
+        ioUtil.showMessage("-> escolha um tipo de interacao:");
+        int chosen = ioUtil.getIntSpecific("> (1-👍 2-👎 3-😂 4-😲): ", 1, 4);
         if (chosen == 1) return InteractionType.LIKE;
         if (chosen == 2) return InteractionType.DISLIKE;
         if (chosen == 3) return InteractionType.LAUGH;

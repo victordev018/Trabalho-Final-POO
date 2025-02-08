@@ -6,6 +6,10 @@ public class AdvancedProfile extends Profile {
         super(id, username, photo, email, type);
     }
 
+    public AdvancedProfile() {
+        super();
+    }
+
     public void changeOtherProfileStatus(Profile profile) {
         profile.changeStatus();
     }

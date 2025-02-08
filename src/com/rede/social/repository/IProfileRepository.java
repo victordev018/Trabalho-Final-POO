@@ -1,5 +1,6 @@
 package com.rede.social.repository;
 
+import com.rede.social.exception.database.DBException;
 import com.rede.social.exception.global.AlreadyExistsError;
 import com.rede.social.exception.global.NotFoundError;
 import com.rede.social.model.Profile;
@@ -14,7 +15,7 @@ public interface IProfileRepository {
      * @throws AlreadyExistsError no caso de ja existir perfil com o mesmo id, username ou email
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    void addProfile(Profile profile) throws AlreadyExistsError;
+    void addProfile(Profile profile) throws AlreadyExistsError, DBException;
 
     /**
      * Método que busca e retorna um perfil baseado na string que representa o email do perfil
@@ -23,7 +24,7 @@ public interface IProfileRepository {
      * @throws NotFoundError no caso de não existir um perfil com este email
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    Optional<Profile> findProfileByEmail(String email) throws NotFoundError;
+    Optional<Profile> findProfileByEmail(String email) throws NotFoundError, DBException;
 
     /**
      * Método que busca e retorna um perfil baseado na string que representa o username do perfil
@@ -32,7 +33,7 @@ public interface IProfileRepository {
      * @throws NotFoundError no caso de não existir um perfil com este username
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    Optional<Profile> findProfileByUsername(String username) throws NotFoundError;
+    Optional<Profile> findProfileByUsername(String username) throws NotFoundError, DBException;
 
     /**
      * Método que busca e retorna um perfil baseado no int que representa o id do perfil
@@ -41,12 +42,12 @@ public interface IProfileRepository {
      * @throws NotFoundError no caso de não existir um perfil com este id
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    Optional<Profile> findProfileById(Integer id) throws NotFoundError;
+    Optional<Profile> findProfileById(Integer id) throws NotFoundError, DBException;
 
     /**
      * Esse método é utilizado para retornar todos os perfis armazenados
      * @return todos os perfis criados
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
-    List<Profile> getAllProfiles();
+    List<Profile> getAllProfiles() throws DBException;
 }
