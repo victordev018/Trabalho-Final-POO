@@ -6,13 +6,13 @@ import java.util.Scanner;
 
 public class IOUtil {
 
-    private static Scanner in = new Scanner(System.in, "UTF-8").useDelimiter("\n");
+    private static final Scanner in = new Scanner(System.in, "UTF-8").useDelimiter("\n");
 
     public IOUtil() {}
 
     public static String getText(String msg) {
         try {
-            System.out.print(msg + " ");
+            System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
             String input = in.nextLine().trim();
             if (input.matches(".*\\d.*")) {
                 throw new InvalidInputError("Entrada inválida: apenas texto é permitido.");
@@ -23,13 +23,13 @@ public class IOUtil {
             return getText(msg);
         }
     }
-
+  
     public static Integer getInt(String msg) {
         try {
-            System.out.print(msg + " ");
+            System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
             return Integer.parseInt(in.nextLine().trim());
         } catch (NumberFormatException e) {
-            System.out.println("Digite um número inteiro válido.");
+            showError("Digite um número inteiro válido.");
             return getInt(msg);
         }
     }
@@ -42,22 +42,26 @@ public class IOUtil {
             }
             return number;
         } catch (InvalidInputError e) {
-            System.out.println(e.getMessage());
+            showError(e.getMessage());
             return getIntSpecific(msg, min, max);
         }
     }
 
-    public static void showError(String error) {
-        System.out.println(error);
+    public void showError(String error) {
+        System.out.println(colorUtils.RED + error + colorUtils.RESET);
     }
 
-    public static void showMessage(String message) {
-        System.out.println(message);
+    public void showMessage(String message) {
+        System.out.println(colorUtils.CYAN + message + colorUtils.RESET);
     }
 
-    public static void clearScreen() {
-        System.out.print("Pressione <Enter> para continuar...");
-        in.nextLine();
+    public void showWarning(String warning) {
+        System.out.println(colorUtils.YELLOW + warning + colorUtils.RESET);
+    }
+
+    public void clearScreen() {
+        System.out.print(colorUtils.YELLOW + "Pressione <Enter> para continuar..." + colorUtils.RESET);
+        in.next();
         showMessage("\n".repeat(20));
     }
 
