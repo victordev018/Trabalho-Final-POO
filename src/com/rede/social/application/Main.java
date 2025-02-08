@@ -11,14 +11,13 @@ import com.rede.social.repository.impl.ProfileRepositoryImplJDBC;
 public class Main {
     public static void main(String[] args) throws DBException {
 
-        DBConnection dbConnection = new DBConnection();
+//        DBConnection dbConnection = new DBConnection();
+//        IProfileRepository profileRepositoryJDBC = new ProfileRepositoryImplJDBC(dbConnection.getConnection());
 
         IProfileRepository profileRepository = new ProfileRepositoryImplFile();
+        IPostRepository postRepository = new PostRepositoryImplFile(profileRepository);
 
-        IProfileRepository profileRepositoryJDBC = new ProfileRepositoryImplJDBC(dbConnection.getConnection());
-        IPostRepository postRepository = new PostRepositoryImplFile(profileRepositoryJDBC);
-
-        SocialNetwork socialNetwork = new SocialNetwork(postRepository, profileRepositoryJDBC);
+        SocialNetwork socialNetwork = new SocialNetwork(postRepository, profileRepository);
         App app = new App(socialNetwork);
         app.run();
     }

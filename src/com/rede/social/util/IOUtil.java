@@ -10,7 +10,7 @@ public class IOUtil {
 
     public IOUtil() {}
 
-    public static String getText(String msg) {
+    public String getText(String message) {
         try {
             System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
             String input = in.nextLine().trim();
@@ -20,21 +20,21 @@ public class IOUtil {
             return input;
         } catch (InvalidInputError e) {
             System.out.println(e.getMessage());
-            return getText(msg);
+            return getText(message);
         }
     }
   
-    public static Integer getInt(String msg) {
+    public Integer getInt(String message) {
         try {
             System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
             return Integer.parseInt(in.nextLine().trim());
         } catch (NumberFormatException e) {
             showError("Digite um número inteiro válido.");
-            return getInt(msg);
+            return getInt(message);
         }
     }
 
-    public static Integer getIntSpecific(String msg, int min, int max) {
+    public Integer getIntSpecific(String msg, int min, int max) {
         try {
             int number = getInt(msg);
             if (number < min || number > max) {
@@ -61,11 +61,11 @@ public class IOUtil {
 
     public void clearScreen() {
         System.out.print(colorUtils.YELLOW + "Pressione <Enter> para continuar..." + colorUtils.RESET);
-        in.next();
+        in.nextLine();
         showMessage("\n".repeat(20));
     }
 
-    public static void closeScanner() {
+    public void closeScanner() {
         in.close();
     }
 }
