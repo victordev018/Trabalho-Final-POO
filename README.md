@@ -26,8 +26,9 @@ Este projeto foi desenvolvido como Trabalho Final da disciplina de Programação
 
 ## 📢 Apresentação
 
-🎥 Vídeo de apresentação do projeto [](). 
+🎥 Vídeo de apresentação do projeto []().
 
+> link: [clique aqui](https://youtu.be/ODIvitDQe9M)
 ---
 
 ## 👥 Desenvolvido por
