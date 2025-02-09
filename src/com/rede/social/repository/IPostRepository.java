@@ -10,7 +10,8 @@ import java.util.Optional;
 public interface IPostRepository {
     /**
      * Método que adiciona uma instância de Post no repositório de Posts
-     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
+     * @param post objeto post que será salvo
+     * @throws DBException caso ocorra falha na comunicaçao com a base de dados
      */
     void addPost(Post post) throws DBException;
 
@@ -19,14 +20,14 @@ public interface IPostRepository {
      * @param id o id do post a ser procurado
      * @return o post procurado, se encontrado
      * @throws NotFoundError no caso do post não ser encontrado
-     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
+     * @throws DBException caso ocorra falha na comunicaçao com a base de dados
      */
     Optional<Post> findPostById(Integer id) throws NotFoundError, DBException;
 
     /**
      * Esse método retorna todos os posts armazenados e ordenados de modo decrescente
      * @return todos os posts criados em ordem decrescente
-    // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
+     * @throws DBException caso ocorra falha na comunicaçao com a base de dados
      */
     List<Post> listPosts() throws DBException;
 
@@ -35,7 +36,7 @@ public interface IPostRepository {
      * @param usernameOwner uma string que representa o username do Perfil a ser buscado
      * @return Uma lista de posts pertencentes ao dono
      * @throws NotFoundError no caso de nao encontrar o perfil do dono dos posts
-    // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
+     * @throws DBException caso ocorra falha na comunicaçao com a base de dados
      */
     List<Post> listPostsByProfile(String usernameOwner) throws NotFoundError, DBException;
 }

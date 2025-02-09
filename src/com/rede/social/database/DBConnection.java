@@ -9,7 +9,7 @@ public class DBConnection {
     private Connection conn = null;
 
     public Connection getConnection() throws DBException {
-        String url = "jdbc:postgresql://localhost/social_media_app?user=postgres&password=jotave9474&ssl=false";
+        String url = "jdbc:postgresql://dpg-cue10qdsvqrc73d2lvvg-a.oregon-postgres.render.com/social_media?user=jotasammy&password=4CbOriMJLLpsYUreWDAqK1v5UDqZ7Fvx&ssl=false";
         try {
             conn = DriverManager.getConnection(url);
             return conn;

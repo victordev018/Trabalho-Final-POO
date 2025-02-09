@@ -102,18 +102,28 @@ public class App {
         }
 
         if (chosen == 0) {
+            ioUtil.showMessage("> deseja salvar os dados em arquivos? (s/n): ");
+            if (!canSaveInFile()) {
+                viewStack.pop();
+                return;
+            }
             try {
                 socialNetwork.saveProfiles();
                 socialNetwork.savePosts();
+                viewStack.pop();
+                return;
             } catch (IOException | DBException e) {
                 throw new RuntimeException(e);
             }
-            viewStack.pop();
-            return;
         }
 
         // executa a função callback da opção escolhida
         optionsToShow.get(chosen-1).callback.run();
+    }
+
+    private boolean canSaveInFile() {
+        char chosen = ioUtil.getText("escolha: ").toLowerCase().charAt(0);
+        return chosen == 's';
     }
 
     /**

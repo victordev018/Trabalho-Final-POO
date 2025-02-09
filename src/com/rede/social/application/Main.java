@@ -14,7 +14,6 @@ import java.sql.Connection;
 public class Main {
     public static void main(String[] args) throws DBException {
 
-        // precisa ter a base de dados local rodando
 //        DBConnection dbConnection = new DBConnection();
 //        Connection conn = dbConnection.getConnection();
 //        IProfileRepository profileRepositoryJDBC = new ProfileRepositoryImplJDBC(conn);

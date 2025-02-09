@@ -61,7 +61,7 @@ public class IOUtil {
 
     public void clearScreen() {
         System.out.print(ColorUtils.YELLOW + "Pressione <Enter> para continuar..." + ColorUtils.RESET);
-        in.nextLine();
+        in.nextLine();;
         showMessage("\n".repeat(20));
     }
 
