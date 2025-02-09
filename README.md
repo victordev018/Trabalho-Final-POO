@@ -1,10 +1,10 @@
-# Trabalho Final - Rede Social
+# 🚀 Trabalho Final - Rede Social
 
 Este projeto foi desenvolvido como Trabalho Final da disciplina de Programação Orientada a Objetos no Instituto Federal do Piauí, com o objetivo de criar uma rede social simplificada que permite o gerenciamento de perfis, publicações, interações e solicitações de amizade. O sistema possui uma interface interativa via terminal e suporte para persistência de dados em arquivos JSON e PostgreSQL.
 
 ---
 
-## Funcionalidades
+## ⚙️ Funcionalidades
 
 - **Perfis**: Criar, buscar, listar, ativar/desativar e gerenciar amigos.
 - **Publicações:** Criar e listar postagens.
@@ -15,22 +15,22 @@ Este projeto foi desenvolvido como Trabalho Final da disciplina de Programação
 
 ---
 
-##  Tecnologias Utilizadas
+## 🛠 Tecnologias Utilizadas
 
-- **Linguagem:** Java.
-- **Persistência:** Arquivos JSON e Banco de Dados PostgreSQL.
-- **Interface:** Linha de comando interativa (CLI).
+- **Linguagem:** Java. 
+- **Persistência:** Arquivos JSON e Banco de Dados PostgreSQL. 
+- **Interface:** Linha de comando interativa (CLI). 
 - **Estrutura:** Orientação a objetos com herança e boas práticas de encapsulamento.
 
 ---
 
-## Apresentação
+## 📢 Apresentação
 
-Vídeo de apresentação do projeto [](). 
+🎥 Vídeo de apresentação do projeto [](). 
 
 ---
 
-## Desenvolvido por
+## 👥 Desenvolvido por
 
 | Nome                                               |
 | -------------------------------------------------- |
