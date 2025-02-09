@@ -49,15 +49,8 @@ public class SocialNetwork {
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
     public Post createPost(String content, Profile owner) throws DBException {
-        List<Post> posts = postRepository.listPosts();
-        Post post;
-        if (posts.isEmpty()) {
-            post = new Post(1, content, "PN", owner);
-            owner.addPost(post);
-            return post;
-        }
-        Integer id = posts.get(posts.size() - 1).getId() + 1;
-        post = new Post(id, content, "PN", owner);
+        int lastId = this.getLastPostId();
+        Post post = new Post(lastId+1, content, "PN", owner);
         owner.addPost(post);
         return post;
     }
@@ -70,12 +63,18 @@ public class SocialNetwork {
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
     public AdvancedPost createAdvancedPost(String content, Profile owner) throws DBException {
-        List<Post> posts = postRepository.listPosts();
-        if (posts.isEmpty()) {
-            return new AdvancedPost(1, content, "PA", owner);
-        }
-        Integer id = posts.get(posts.size() - 1).getId() + 1;
-        return new AdvancedPost(id, content, "PA", owner);
+        int lastId = this.getLastPostId();
+        AdvancedPost advancedPost = new AdvancedPost(lastId+1, content, "PA", owner);
+        owner.addPost(advancedPost);
+        return advancedPost;
+    }
+
+    public int getLastPostId() throws DBException {
+        List<Post> posts = this.postRepository.listPosts();
+        return posts.stream()
+                .mapToInt(Post::getId)  // Converte a stream para uma de inteiros
+                .max()                  // Pega o maior ID
+                .orElse(0);       // Retorna 0 se a lista estiver vazia
     }
 
     /**
@@ -116,12 +115,8 @@ public class SocialNetwork {
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
     public Profile createProfile(String username, String photo, String email) throws DBException {
-        List<Profile> profiles = profileRepository.getAllProfiles();
-        if (profiles.isEmpty()) {
-            return new Profile(1, username, photo, email, "PN");
-        }
-        Integer id = profiles.get(profiles.size() - 1).getId() + 1;
-        return new Profile(id, username, photo, email, "PN");
+        int lastId = this.getLastProfileId();
+        return new Profile(lastId+1, username, photo, email, "PN");
     }
 
     /**
@@ -133,12 +128,16 @@ public class SocialNetwork {
     // TODO: adicionar throws DBException e atualizar documentação caso haja erro na comunicação com o banco de dados
      */
     public AdvancedProfile createAdvancedProfile(String username, String photo, String email) throws DBException {
-        List<Profile> profiles = profileRepository.getAllProfiles();
-        if (profiles.isEmpty()) {
-            return new AdvancedProfile(1, username, photo, email, "PA");
-        }
-        Integer id = profiles.get(profiles.size() - 1).getId() + 1;
-        return new AdvancedProfile(id, username, photo, email, "PA");
+        int lastIndex = this.getLastProfileId();
+        return new AdvancedProfile(lastIndex+1, username, photo, email, "PA");
+    }
+
+    public int getLastProfileId() throws DBException {
+        List<Profile> posts = this.profileRepository.getAllProfiles();
+        return posts.stream()
+                .mapToInt(Profile::getId)   // Converte a stream para uma de inteiros
+                .max()                      // Pega o maior ID
+                .orElse(0);           // Retorna 0 se a lista estiver vazia
     }
 
     /**

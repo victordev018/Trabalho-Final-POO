@@ -12,7 +12,7 @@ public class IOUtil {
 
     public String getText(String message) {
         try {
-            System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
+            System.out.print(ColorUtils.YELLOW + message + ColorUtils.RESET + " " + ColorUtils.WHITE);
             String input = in.nextLine().trim();
             if (input.matches(".*\\d.*")) {
                 throw new InvalidInputError("Entrada inválida: apenas texto é permitido.");
@@ -26,7 +26,7 @@ public class IOUtil {
   
     public Integer getInt(String message) {
         try {
-            System.out.print(colorUtils.YELLOW + message + colorUtils.RESET + " " + colorUtils.WHITE);
+            System.out.print(ColorUtils.YELLOW + message + ColorUtils.RESET + " " + ColorUtils.WHITE);
             return Integer.parseInt(in.nextLine().trim());
         } catch (NumberFormatException e) {
             showError("Digite um número inteiro válido.");
@@ -48,19 +48,19 @@ public class IOUtil {
     }
 
     public void showError(String error) {
-        System.out.println(colorUtils.RED + error + colorUtils.RESET);
+        System.out.println(ColorUtils.RED + error + ColorUtils.RESET);
     }
 
     public void showMessage(String message) {
-        System.out.println(colorUtils.CYAN + message + colorUtils.RESET);
+        System.out.println(ColorUtils.CYAN + message + ColorUtils.RESET);
     }
 
     public void showWarning(String warning) {
-        System.out.println(colorUtils.YELLOW + warning + colorUtils.RESET);
+        System.out.println(ColorUtils.YELLOW + warning + ColorUtils.RESET);
     }
 
     public void clearScreen() {
-        System.out.print(colorUtils.YELLOW + "Pressione <Enter> para continuar..." + colorUtils.RESET);
+        System.out.print(ColorUtils.YELLOW + "Pressione <Enter> para continuar..." + ColorUtils.RESET);
         in.nextLine();
         showMessage("\n".repeat(20));
     }

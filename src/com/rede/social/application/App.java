@@ -15,7 +15,7 @@ import com.rede.social.model.Post;
 import com.rede.social.model.Profile;
 import com.rede.social.model.enums.InteractionType;
 import com.rede.social.util.IOUtil;
-import com.rede.social.util.colorUtils;;
+import com.rede.social.util.ColorUtils;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -80,12 +80,12 @@ public class App {
      * @param options é uma lista de objetos do tipo {@link Option} e mostra ao usuário as opções no menu
      * */
     public void showMenu(List<Option> options) {
-        colorUtils.titleColor();
+        ColorUtils.titleColor();
         int numberOption = 0;
         for (Option o : options) {
-            colorUtils.printColor("-> %-2d - %s%n", ++numberOption, o.title);
+            ColorUtils.printColor("-> %-2d - %s%n", ++numberOption, o.title);
         }
-        colorUtils.printColor("-> %-2d - Sair%n", 0);
+        ColorUtils.printColor("-> %-2d - Sair%n", 0);
     }
 
     /**
