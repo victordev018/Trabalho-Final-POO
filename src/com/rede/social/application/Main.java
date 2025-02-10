@@ -14,10 +14,10 @@ import java.sql.Connection;
 public class Main {
     public static void main(String[] args) throws DBException {
 
-//        DBConnection dbConnection = new DBConnection();
-//        Connection conn = dbConnection.getConnection();
-//        IProfileRepository profileRepositoryJDBC = new ProfileRepositoryImplJDBC(conn);
-//        IPostRepository postRepositoryJDBC = new PostRepositoryImplJDBC(profileRepositoryJDBC, conn);
+        DBConnection dbConnection = new DBConnection();
+        Connection conn = dbConnection.getConnection();
+        IProfileRepository profileRepositoryJDBC = new ProfileRepositoryImplJDBC(conn);
+        IPostRepository postRepositoryJDBC = new PostRepositoryImplJDBC(profileRepositoryJDBC, conn);
 
         IProfileRepository profileRepository = new ProfileRepositoryImplFile();
         IPostRepository postRepository = new PostRepositoryImplFile(profileRepository);
@@ -26,6 +26,6 @@ public class Main {
         App app = new App(socialNetwork);
         app.run();
 
-//        dbConnection.closeConnection();
+        dbConnection.closeConnection();
     }
 }

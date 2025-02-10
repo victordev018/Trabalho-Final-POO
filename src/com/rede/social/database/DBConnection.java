@@ -9,12 +9,13 @@ public class DBConnection {
     private Connection conn = null;
 
     public Connection getConnection() throws DBException {
-        String url = "jdbc:postgresql://dpg-cue10qdsvqrc73d2lvvg-a.oregon-postgres.render.com/social_media?user=jotasammy&password=4CbOriMJLLpsYUreWDAqK1v5UDqZ7Fvx&ssl=false";
+        String localURL = "jdbc:postgresql://localhost/social_media_app?user=postgres&password=jotave9474&ssl=false";
+        String remoteURL = "jdbc:postgresql://dpg-cue10qdsvqrc73d2lvvg-a.oregon-postgres.render.com/social_media?user=jotasammy&password=4CbOriMJLLpsYUreWDAqK1v5UDqZ7Fvx&ssl=false";
         try {
-            conn = DriverManager.getConnection(url);
+            conn = DriverManager.getConnection(localURL);
             return conn;
         } catch (SQLException e) {
-            throw new DBException("Falha ao tentar se conecetar com o banco de dados" + e.getMessage());
+            throw new DBException("Falha enquanto tenta se conectar com o banco de dados" + e.getMessage());
         }
     }
 
